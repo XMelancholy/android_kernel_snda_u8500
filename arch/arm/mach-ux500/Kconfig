@@ -1,0 +1,289 @@
+if ARCH_U8500
+
+config UX500_SOC_COMMON
+	bool
+	default y
+	select ARM_GIC
+	select PINCTRL
+	select PINCTRL_NOMADIK
+	select PL310_ERRATA_753970
+	select ARM_ERRATA_754322
+	select ARM_ERRATA_764369
+	select SYS_SOC
+	select HAS_MTU
+	select SOC_BUS
+
+config UX500_SOC_DBX500
+	depends on UX500_SOC_DB8500
+	bool
+
+menu "Ux500 SoC"
+
+config UX500_SOC_DB8500
+	bool "DB8500"
+	select UX500_SOC_DBX500
+	select PINCTRL_DB8500
+
+endmenu
+
+menu "Ux500 target platform (boards)"
+
+config MACH_UX500
+	bool "Ux500 Development platform"
+	depends on UX500_SOC_DB8500
+
+config MACH_U8500
+	bool "U8500 Development platform"
+	depends on UX500_SOC_DB8500
+	select MACH_UX500
+	select UIB
+	help
+	  Include support for the mop500 development platform.
+
+config MACH_HREFV60
+	bool "U85000 Development platform, HREFv60 version"
+	depends on UX500_SOC_DB8500
+	select MACH_U8500
+	select UIB
+	help
+	  Include support for the HREFv60 new development platform.
+
+config MACH_A9500
+	bool "A9500 Development platform"
+	depends on UX500_SOC_DB8500
+	select MACH_U8500
+	help
+          Include support for the 9500 development platform.
+
+config MACH_U8520
+	bool "U8520 Development platform"
+	depends on UX500_SOC_DB8500
+	select MACH_U8500
+	select UIB
+	help
+	  Include support for the 8520 development platform.
+
+config MACH_SNOWBALL
+	bool "U8500 Snowball platform"
+	depends on UX500_SOC_DB8500
+	select MACH_U8500
+	select UIB
+	help
+	  Include support for the snowball development platform.
+
+config MACH_U9540
+	bool "U9540 Development platform"
+	depends on UX500_SOC_DB8500
+	select MACH_UX500
+	help
+	  Include support for the U9540 development platform.
+
+choice
+	prompt "U9540 board type"
+	depends on MACH_U9540
+	default MACH_CCU9540
+
+config MACH_CCU9540
+	bool "CCU9540 Development platform"
+	select UIB
+	help
+	 Include support for the ccu9540 development platform.
+
+config MACH_PALLADIUM9540
+	bool "Palladium 9540 virtual platform"
+	help
+	 Include support for the Palladium 9540 virtual platform.
+
+endchoice
+
+config MACH_U8540
+	bool "U8540 Development platform"
+	depends on UX500_SOC_DB8500
+	select MACH_UX500
+	select PINCTRL_DB8540
+	help
+	  Include support for the U8540 development platform.
+
+choice
+	prompt "U8540 board type"
+	depends on MACH_U8540
+	default MACH_CCU8540
+
+config MACH_CCU8540
+	bool "CCU8540 Development platform"
+	select UIB
+	help
+	 Include support for the ccu8540 development platform.
+
+config MACH_PALLADIUM8540
+	bool "Palladium 8540 virtual platform"
+	help
+	 Include support for the Palladium 8540 virtual platform.
+
+endchoice
+
+config MACH_UX500_DT
+	bool "Generic U8500 support using device tree"
+	depends on MACH_U8500
+	select USE_OF
+
+endmenu
+
+menu "User Interface Board"
+
+config UIB
+	bool "User Interface Board (UIB) support"
+	help
+	  Include support for the Universal Board Support
+
+choice
+	prompt "Ux500 UIB Keylayout"
+	depends on UIB
+	default KEYLAYOUT_LAYOUT1
+
+config KEYLAYOUT_LAYOUT1
+	bool "UIB Keylayout 1; for generic users"
+	help
+	  Supported keylayout for some numerics, power/call buttons,
+	  volume control etc
+
+config KEYLAYOUT_LAYOUT2
+	bool "UIB Keylayout 2; for connectivity users"
+	help
+	  Supports keylayout numerics 0-9, left/right/up/down/back/
+	  enter keys and special character "."(dot)
+
+endchoice
+
+endmenu
+
+choice
+	prompt "DBx500 sched_clock"
+
+config DBX500_SCHED_CLOCK_PRCMU
+	bool "PRCMU Timer sched_clock"
+	depends on CLKSRC_DBX500_PRCMU
+	select CLKSRC_DBX500_PRCMU_SCHED_CLOCK
+	help
+	  Use the always on PRCMU Timer as sched_clock
+
+config DBX500_MTU_SCHED_CLOCK
+	bool "MTU sched_clock"
+	depends on HAS_MTU
+	select NOMADIK_MTU_SCHED_CLOCK
+	help
+	  Use the Multi Timer Unit as the sched_clock.
+
+endchoice
+
+config UX500_DEBUG_UART
+	int "Ux500 UART to use for low-level debug"
+	default 2
+	help
+	  Choose the UART on which kernel low-level debug messages should be
+	  output.
+
+config UX500_GPIO_KEYS
+        bool "Use gpio-keys for proximity and hal sensors"
+        depends on KEYBOARD_GPIO
+        help
+	  Add proximity and hal sensors as a gpio keyboard.
+
+config DBX500_PRCMU_DEBUG
+	bool "DBX500 PRCMU debug"
+	depends on ((MFD_DB8500_PRCMU || MFD_DBX540_PRCMU) && DEBUG_FS)
+	help
+	  Add support for PRCMU debug
+
+config TEE_UX500
+	bool "Trusted Execution Environment (TEE) ux500 hardware support"
+	depends on TEE_SUPPORT && HWMEM
+	default y
+	help
+	  Adds TEE hardware support for ux500 platforms.
+
+config DB8500_MLOADER
+	bool "Modem firmware upload/download support"
+	depends on UX500_SOC_DB8500
+	select DBX500_MLOADER
+	help
+	  Adds Modem firmware upload/download support to DB8500.
+
+config UX500_DEBUG_HWREG
+	bool "Debug hardware registers from userspace"
+	depends on (DEBUG_FS && UX500_SOC_DB8500)
+	help
+	  Adds various debug files to access registers.
+	  This should never ever be used for anything else than debugging.
+
+config UX500_DEBUG_NO_LAUTERBACH
+       bool "Disable clocks needed for Lauterbach debugging"
+       help
+	  Disable clocks needed for Lauterbach debugging at boot.
+	  If yes, you will reduce the power consumption.
+
+config UX500_L2X0_PREFETCH_CTRL
+	bool "PL310 prefetch control"
+	depends on (UX500_SOC_DB8500) && \
+			(TEE_UX500 && CACHE_L2X0)
+	default y
+	help
+	  Adds interface to control instruction and data prefetch.
+	  Communication with Trustzone is done through TEE driver.
+
+config UX500_ROMCODE_SHARED_MUTEX
+	bool "ROMCODE Shared Mutex Configuration"
+	depends on UX500_SOC_DB8500 && TEE_UX500
+	default y
+	help
+	  Add interface to configure shared mutex used for L2 cache maintenance
+	  inside RomCode, to prevent dead lock while exiting DeepSleep/DeepIdle/Hotplug.
+	  Communication with Trustzone is done through TEE driver.
+
+config UX500_PRCMU_CPU_HOTPLUG
+	bool "PRCMU CPU Hotplug feature"
+	depends on UX500_ROMCODE_SHARED_MUTEX
+	default n
+	help
+	  Add interface to enable/disable PRCMUFw CPU Hotplug feature
+
+config UX500_DB_DUMP
+	bool "DBx500 register dump on crash"
+	depends on (UX500_SOC_DB8500)
+	default y
+	help
+	  Reads specific DBx500 register in case of kernel crash
+	  and saves it.
+
+config RTC_HCTOHC
+	bool "Set 2nd RTC from 1st RTC at startup and resume"
+	depends on (UX500_SOC_DB8500 && RTC_HCTOSYS && RTC_DRV_PL031)
+	default y
+	help
+	  If you say yes here, the 2nd RTC will be set using
+	  the value read from the 1st RTC device. This is useful when
+	  the 1st RTC is battery backed but not the 2nd.
+
+config UX500_HW_OBSERVER
+	bool "Add debug IF for HW Observer"
+	depends on (DEBUG_FS || UX500_SOC_DB8500)
+	default y
+	help
+	  Add interface to configure Hw Observer lines.
+
+config U8500_CUSTOM_RF
+	bool "Custom RF for 8500"
+	help
+	  Say Y here if the board does not use 8500 RF to provide sysclk.  This
+	  will disable the use of the SWAT protocol on the sysclkreqout line.
+
+config U9540_MLOADER
+	bool "Enable u9540 MLoader support"
+	help
+	  Adds support of MLoader as platform device.
+
+source "arch/arm/mach-ux500/Kconfig-arch"
+source "arch/arm/mach-ux500/pm/Kconfig"
+source "arch/arm/mach-ux500/test/Kconfig"
+
+endif

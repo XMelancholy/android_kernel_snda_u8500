@@ -1,0 +1,17 @@
+HOW TO ENABLE THIS DRIVER:
+in menuconfig go to "Device Drivers" -> "Staging drivers" and select "HX170 multiformat video decoder"
+
+HOW TO ENABLE TRACE/DEBUG:
+to dump register you must first mount debugfs
+mount -t debugfs none /sys/kernel/debug
+then you can dump hx170dec registers
+cat /sys/kernel/debug/hx170dec/dump_regs
+
+enable all dynamic trace of the file
+echo -n 'file hx170dec.c +p' > /sys/kernel/debug/dynamic_debug/control
+
+get module version
+cat /sys/module/hx170dec/version
+
+to activate perf traces:
+cat /sys/kernel/debug/hx170/dump_stats

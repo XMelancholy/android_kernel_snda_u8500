@@ -1,0 +1,129 @@
+Copyright (C) 2012 ST-Ericsson Le Mans SA 2012
+
+Introduction
+============
+
+The deep debug framework provides a way to export more debug information from
+user space. Developers can put any sensitive information especially for
+hardware validation.
+
+Deep debug interfaces are located within debugfs under "deep_debug" directory:
+	<debugfs>/deep_debug
+
+
+Deep debug data structure
+=========================
+
+The deep debug framework provides direct access to hardware registers.
+Contrary to devmem, it handles, for each hardware IP:
+	- clock management
+	- concurrency access with others drivers
+	- I/O errors
+
+Please, see below the following structure uses to export hardware registers:
+
+struct ddbg_target {
+	const char *name;
+	u32 phyaddr;
+	struct ddbg_register *reg;
+	u32 nb_regs;
+	struct ddbg_register *curr;
+	int (*write_reg)(u32 offset, u32 val);
+	int (*read_reg)(u32 offset, u32 *val);
+	int (*suspend)(void);
+	int (*resume)(void);
+	struct dentry *dir;
+	struct dentry *reg_file;
+	struct dentry *val_file;
+	struct dentry *sel_file;
+};
+
+Here name is the name of the hardware IP, phyaddr is the harware IP physical
+base address, reg lists all accessible registers and nb_regs is the number of
+accessible registers.
+
+A set of operations which implements how to read/write from/into registers is
+avalaible thanks to write_reg and read_reg pointer functions. In the same way,
+suspend and resume pointer functions should be set for power savings needs.
+
+Regarding filesystem, dir indicates the directory which should hold the files
+for a specific harware, reg_file is a read-only file where all registers
+accessible from userspace could be read, sel_file is used to set the register
+to be accessed to and val_file is used to read/write register value from
+user space.
+
+For some hardware IP, access to register is not enough to validate the feature.
+Indeed, sometimes, more complex services are required. That's why, deep debug
+framework enables to export services represented by the following data
+structure:
+
+struct ddbg_service {
+	const char *name;
+	int (*probe) (struct ddbg_service *, struct dentry *);
+};
+
+Here name is the name of the service, probe is a pointer function used to
+register all needed directories and files, under <debugfs>/deep_debug/<hw>,
+to handle the service.
+Thanks to deep debug service, developers have a good abstraction level to put
+any service they want there.
+
+
+How to add deep debug information
+=================================
+/
+Drivers using deep debug framework should include <linux/ux500_deepdebug.h>.
+
+All deep debug code should be independent from original driver. If some data
+have to be shared between two drivers, a private header file should be used.
+Please, see below an example:
+	gpio.c (original file)
+	gpio_deepdebug.c (deep debug file)
+	gpio.h (header file to share data)
+
+The two ways to create deep debug files within debugfs under
+<debugfs>/deep_debug directory are with:
+	int deep_debug_regaccess_register(struct ddbg_target *ddbg);
+	int deep_debug_service_access_register(struct ddbg_service *ddbg);
+
+'deep_debug_regaccess_register' and 'deep_debug_service_access_register' are
+respectively used to export to debugfs, registers and services accesses, for an
+hardware IP. These functions are mainly called from the deep debug driver
+init function.
+
+In the same way, it exists two functions to remove from debugfs deep debug
+files and directories:
+	int deep_debug_regaccess_unregister(struct ddbg_target *ddbg);
+	int deep_debug_service_access_unregister(struct ddbg_service *ddbg);
+
+'deep_debug_regaccess_unregister' and 'deep_debug_service_access_unregister'
+are respectively used to remove from debugfs, registers and services accesses,
+for an hardware IP. These functions are mainly called from the deep debug
+driver exit function.
+
+In Kconfig file, deep debug drivers have to be set by default and depend at
+least on DEEP_DEBUG switch.
+
+
+Examples
+========
+
+//lists all accessible registers by displaying name, address and access rights
+//for each register
+# cat <debugfs>/<hw>/registers
+# REG_NAME_0:0x81456210:DDBG_RW
+# REG_NAME_1:0x81456214:DDBG_RW
+# REG_NAME_2:0x81456218:DDBG_RW
+# REG_NAME_3:0x8145621c:DDBG_RW
+
+//select a register by address
+# echo 0x81456214 > <debugfs>/<hw>/select
+# cat <debugfs>/<hw>/select
+# REG_NAME_1:0x81456214:DDBG_RW
+
+//read from register
+# cat <debugfs>/<hw>/val
+# 0x32FFDE00
+
+//write into register
+# echo 0x32FFDE04 > <debugfs>/<hw>/val

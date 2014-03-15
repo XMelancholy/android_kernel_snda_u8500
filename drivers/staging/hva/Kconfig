@@ -1,0 +1,7 @@
+
+config STE_HVA
+       tristate "ST-Ericsson HVA (Hardware Video Accelerator) driver"
+       help
+         This is the HVA driver. The Hardware Video Accelerator is a
+         hardware subsystem dedicated to video decoding and encoding.
+

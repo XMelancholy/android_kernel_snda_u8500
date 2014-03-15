@@ -1,0 +1,5 @@
+config HX170_DEC
+	bool "ST-Ericsson HX170 multiformat video decoder"
+	depends on MFD_DBX540_PRCMU
+	help
+		Say Y here enable hx170 (aka G1) multiformat video decoder.

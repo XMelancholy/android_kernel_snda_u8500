@@ -1,0 +1,29 @@
+#
+# XSHM (external shared memory) support
+#
+config XSHM
+	depends on C2C
+	default n
+	tristate
+
+config XSHM_CHR
+	tristate "Character device for External Shared Memory (XSHM)"
+	select XSHM
+	default n
+	---help---
+	Say "Y" if you want to character device for External Shared
+	Memory (XSHM) IPC mechanism. XSHM is an IPC protocol used to
+	talk to external device such as modem over a shared memory
+	(e.g. Chip to Chip).
+	Only say "M" here if you want to test XSHM and needs to load
+	and unload its module.
+	If unsure say N.
+
+config  XSHM_DEBUG
+	bool "Enable Debug"
+	depends on XSHM
+	default n
+	--- help ---
+	Enable the inclusion of debug code in the XSHM module.
+	Be aware that doing this will impact performance.
+	If unsure say N.

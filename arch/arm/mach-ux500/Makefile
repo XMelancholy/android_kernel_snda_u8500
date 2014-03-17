@@ -18,9 +18,9 @@ endif
 
 obj-$(CONFIG_MACH_UX500) 	+= board-pins-sleep-force.o \
 				board-common-sdi.o \
-				board-common-msp.o \
-				board-common-bm.o \
-				board-common-wlan.o
+				board-mop500-msp.o \
+				board-mop500-bm.o \
+				board-mop500-wlan.o
 
 obj-$(CONFIG_MACH_U8500)	+= board-mop500.o \
 				board-mop500-sdi.o \
@@ -50,11 +50,11 @@ obj-$(CONFIG_MACH_PALLADIUM8540) 	+= board-palladium8540.o \
 					board-palladiumx540-sdi.o
 
 obj-$(CONFIG_UIB) 		+= board-common-uib.o \
-				board-common-stuib.o \
-				board-common-u8500uib.o \
-				board-common-cyttsp.o \
-				board-common-u9540uib.o \
-				board-common-u8540uib.o
+				board-mop500-stuib.o \
+				board-mop500-u8500uib.o \
+				board-mop500-cyttsp.o \
+				board-mop500-u9540uib.o \
+				board-mop500-u8540uib.o
 
 obj-$(CONFIG_ANDROID_STE_TIMED_VIBRA)	+= board-mop500-vibra.o
 obj-$(CONFIG_MCDE)		+= board-mcde.o

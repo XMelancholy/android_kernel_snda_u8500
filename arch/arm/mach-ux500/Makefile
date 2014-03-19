@@ -13,19 +13,19 @@ ifeq ($(CONFIG_UX500_SOC_DB8500), y)
 
 obj-$(CONFIG_UX500_SOC_DBX500)	+= cpu-db8500.o devices-db8500.o \
 				   clock-db8500.o dma-db8500.o
-board-mcde-objs			+= board-mop500-mcde.o board-ccu9540-mcde.o
+board-mcde-objs			+= board-mop500-mcde.o
 endif
 
-obj-$(CONFIG_MACH_UX500) 	+= board-pins-sleep-force.o \
-				board-common-sdi.o \
-				board-mop500-msp.o \
-				board-mop500-bm.o \
-				board-mop500-wlan.o
 
-obj-$(CONFIG_MACH_U8500)	+= board-mop500.o \
+obj-$(CONFIG_MACH_HREFV60)	+= board-pins-sleep-force.o \
+				board-mop500.o \
 				board-mop500-sdi.o \
+				board-common-sdi.o \
 				board-mop500-regulators.o \
 				board-mop500-pins.o \
+				board-mop500-msp.o \
+				board-mop500-bm.o \
+				board-mop500-wlan.o \
 				board-mop500-rmi4.o
 
 obj-$(CONFIG_MACH_CCU9540)	+=  board-ccu9540.o \

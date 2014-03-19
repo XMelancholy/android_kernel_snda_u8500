@@ -46,7 +46,7 @@
 #define DBG(x)
 #endif
 
-#define AX_MODULE_NAME "axperiau_smartass2"
+#define AX_MODULE_NAME "asnda_smartass2"
 #define AX_MODULE_VER "v008 ("__DATE__" "__TIME__")"
 
 typedef long (*nr_running_type) (void);

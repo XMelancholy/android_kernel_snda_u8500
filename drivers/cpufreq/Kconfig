@@ -203,23 +203,6 @@ config CPU_FREQ_GOV_INTELLIDEMAND
 	help
 	  'intellidemand' - an intelligent ondemand governor
 
-config CPU_FREQ_GOV_DYNAMIC_INTERACTIVE
-	tristate "'dynamic interactive' cpufreq policy governor"
-	help
-	  'dynamic interactive' - This driver adds a dynamic cpufreq policy governor
-	  designed for latency-sensitive workloads.
-
-	  This governor attempts to reduce the latency of clock
-	  increases so that the system is more responsive to
-	  interactive workloads.
-
-	  To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_interactive.
-
-	  For details, take a look at linux/Documentation/cpu-freq.
-
-	  If in doubt, say N.
-
 config CPU_FREQ_GOV_PERFORMANCE
 	tristate "'performance' governor"
 	help
@@ -350,15 +333,6 @@ config CPU_FREQ_GOV_HOTPLUG
 
 	  If you don't have one of these architectures or devices, use
 	  'ondemand' instead.
-
-	  If in doubt, say N.
-
-config CPU_FREQ_GOV_LULZACTIVEQ
-	tristate "'lulzactiveq' cpufreq governor"
-	depends on CPU_FREQ
-	help
-	  'lulzactiveq' - more info https://raw.github.com/AnDyXX/Xperia-devices/
-	  master/Xperia%20U%20Modules/Lulzactiveq%20governor/axperiau_lulzactiveq.c
 
 	  If in doubt, say N.
 

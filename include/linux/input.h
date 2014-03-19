@@ -312,7 +312,7 @@ struct input_keymap_entry {
 #define KEY_SYSRQ		99
 #define KEY_RIGHTALT		100
 #define KEY_LINEFEED		101
-#define KEY_HOME		102
+#define KEY_HOME		172
 #define KEY_UP			103
 #define KEY_PAGEUP		104
 #define KEY_LEFT		105
@@ -386,7 +386,7 @@ struct input_keymap_entry {
 #define KEY_PHONE		169	/* Media Select Telephone */
 #define KEY_ISO			170
 #define KEY_CONFIG		171	/* AL Consumer Control Configuration */
-#define KEY_HOMEPAGE		172	/* AC Home */
+#define KEY_HOMEPAGE		102	/* AC Home */
 #define KEY_REFRESH		173	/* AC Refresh */
 #define KEY_EXIT		174	/* AC Exit */
 #define KEY_MOVE		175

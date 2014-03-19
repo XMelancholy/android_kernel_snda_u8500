@@ -37,7 +37,7 @@ obj-$(CONFIG_MACH_PALLADIUM8540) 	+= board-palladium8540.o \
 					board-ccu8540-pins.o \
 					board-palladiumx540-sdi.o
 
-obj-$(CONFIG_UIB) 		+= board-common-uib.o \
+obj-$(CONFIG_UIB) 		+= board-mop500-uib.o \
 				board-mop500-stuib.o \
 				board-mop500-u8500uib.o \
 				board-mop500-cyttsp.o \

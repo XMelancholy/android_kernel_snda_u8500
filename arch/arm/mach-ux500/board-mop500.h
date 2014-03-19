@@ -11,7 +11,7 @@
 #include <linux/mfd/abx500/ab8500-gpio.h>
 #include <mach/gpio.h>
 
-#include "board-common-uib.h"
+#include "board-mop500-uib.h"
 
 /* Snowball GPIO for MMC card */
 #define SNOWBALL_SDMMC_EN_GPIO		217

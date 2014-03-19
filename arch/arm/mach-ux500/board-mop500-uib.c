@@ -1,7 +1,8 @@
 /*
- * Copyright (C) ST-Ericsson SA 2010
+ * Copyright (C) ST-Ericsson SA 2010-2012
  *
  * Author: Rabin Vincent <rabin.vincent@stericsson.com> for ST-Ericsson
+ * Author: Jonas Aaberg <jonas.aberg@stericsson.com> for ST-Ericsson
  * License terms: GNU General Public License (GPL), version 2
  */
 
@@ -13,28 +14,25 @@
 #include <linux/platform_device.h>
 #include <linux/input.h>
 #include <linux/gpio_keys.h>
+#include <linux/delay.h>
 #include <linux/regulator/consumer.h>
 
+#include <asm/mach-types.h>
+
 #include <mach/hardware.h>
+
 #include "pins.h"
+#include "id.h"
+#include "board-mop500-uib.h"
 #include "board-mop500.h"
 
-enum mop500_uib {
-	STUIB,
-	U8500UIB,
-	U8500UIB_R3,
-	U9540UIBS_V1,
-	U9540UIBS_V2,
-	U9540UIBT_V1,
-};
+enum mop500_uib type_of_uib = NO_UIB_SELECTED;
 
 struct uib {
 	const char *name;
 	const char *option;
 	void (*init)(void);
 };
-
-static u8 type_of_uib;
 
 static struct uib __initdata mop500_uibs[] = {
 	[STUIB] = {
@@ -47,11 +45,13 @@ static struct uib __initdata mop500_uibs[] = {
 		.option	= "u8500uib",
 		.init	= mop500_u8500uib_init,
 	},
+#ifdef CONFIG_TOUCHSCREEN_CYTTSP_SPI
 	[U8500UIB_R3] = {
 		.name   = "U8500-UIBR3",
 		.option = "u8500uibr3",
 		.init   = mop500_u8500uib_r3_init,
 	},
+#endif
 	[U9540UIBS_V1] = {
 		.name   = "U9540-UIBS_V1",
 		.option = "u9540uibs_v1",
@@ -62,14 +62,31 @@ static struct uib __initdata mop500_uibs[] = {
 		.option = "u9540uibs_v2",
 		.init   = mop500_u9540uibs_v2_init,
 	},
+	[U9540UIBS_V3] = {
+		.name   = "U9540-UIBS_V3",
+		.option = "u9540uibs_v3",
+		.init   = mop500_u9540uibs_v3_init,
+	},
 	[U9540UIBT_V1] = {
 		.name   = "U9540-UIBT_V1",
 		.option = "u9540uibt_v1",
 		.init   = mop500_u9540uibt_v1_init,
 	},
+	[U8540UIBS_V2] = {
+		.name   = "U8540-UIBS_V2",
+		.option = "u8540uibs_v2",
+		.init   = mop500_u8540uibs_v2_init,
+	},
+	[U8540UIBS_V3] = {
+		.name   = "U8540-UIBS_V3",
+		.option = "u8540uibs_v3",
+		.init   = mop500_u8540uibs_v3_init,
+	},
+	[NO_UIB] = {
+		.name	= "NO UIB",
+		.option	= "nouib",
+	},
 };
-
-static struct uib __initdata *mop500_uib;
 
 static int __init mop500_uib_setup(char *str)
 {
@@ -79,7 +96,7 @@ static int __init mop500_uib_setup(char *str)
 		struct uib *uib = &mop500_uibs[i];
 
 		if (!strcmp(str, uib->option)) {
-			mop500_uib = uib;
+			type_of_uib = i;
 			break;
 		}
 	}
@@ -95,8 +112,8 @@ __setup("uib=", mop500_uib_setup);
  * The UIBs are detected after the I2C host controllers are registered, so
  * i2c_register_board_info() can't be used.
  */
-void mop500_uib_i2c_add(int busnum, struct i2c_board_info const *info,
-		unsigned n)
+void __init mop500_uib_i2c_add(int busnum, struct i2c_board_info const *info,
+			       unsigned n)
 {
 	struct i2c_adapter *adap;
 	struct i2c_client *client;
@@ -117,67 +134,6 @@ void mop500_uib_i2c_add(int busnum, struct i2c_board_info const *info,
 
 	i2c_put_adapter(adap);
 }
-
-static void __init __mop500_uib_init(struct uib *uib, const char *why)
-{
-	pr_info("%s (%s)\n", uib->name, why);
-
-	if (strcmp("stuib", uib->option) == 0)
-		type_of_uib = STUIB;
-	else if (strcmp("u8500uib", uib->option) == 0)
-		type_of_uib = U8500UIB;
-	else if (strcmp("u8500uibr3", uib->option) == 0)
-		type_of_uib = U8500UIB_R3;
-	else if (strcmp("u9540uibs_v1", uib->option) == 0)
-		type_of_uib = U9540UIBS_V1;
-	else if (strcmp("u9540uibs_v2", uib->option) == 0)
-		type_of_uib = U9540UIBS_V2;
-	else if (strcmp("u9540uibt_v1", uib->option) == 0)
-		type_of_uib = U9540UIBT_V1;
-
-	uib->init();
-}
-
-int uib_is_stuib(void)
-{
-	return (type_of_uib == STUIB);
-}
-
-int uib_is_u8500uib(void)
-{
-	return (type_of_uib == U8500UIB);
-}
-
-int uib_is_u8500uibr3(void)
-{
-	return (type_of_uib == U8500UIB_R3);
-}
-
-int uib_is_u9540uibs_v1(void)
-{
-	return (type_of_uib == U9540UIBS_V1);
-}
-
-int uib_is_u9540uibs_v2(void)
-{
-	return (type_of_uib == U9540UIBS_V2);
-}
-
-int uib_is_u9540uibt_v1(void)
-{
-	return (type_of_uib == U9540UIBT_V1);
-}
-
-int uib_is_u9540uibs(void)
-{
-	return uib_is_u9540uibs_v1() || uib_is_u9540uibs_v2();
-}
-
-int uib_is_u9540uibt(void)
-{
-	return uib_is_u9540uibt_v1();
-}
-
 
 #ifdef CONFIG_UX500_GPIO_KEYS
 static struct gpio_keys_button mop500_gpio_keys[] = {
@@ -266,7 +222,7 @@ static inline void mop500_gpio_keys_init(void) { }
  * Check which accelerometer chip is mounted on UIB and
  * read the chip ID to detect whether chip is LSM303DHL/LSM303DHLC.
  */
-int mop500_get_acc_id(void)
+int __init mop500_get_acc_id(void)
 {
 	int status;
 	union i2c_smbus_data data;
@@ -277,12 +233,6 @@ int mop500_get_acc_id(void)
 		pr_err("failed to get i2c adapter\n");
 		return -1;
 	}
-#if defined(CONFIG_MACH_BAMBOOK)
-    status = i2c_smbus_xfer(i2c2, 0x19 , 0 ,
-            I2C_SMBUS_READ, 0x0F ,
-            I2C_SMBUS_BYTE_DATA, &data);
-
-#else
 	status = i2c_smbus_xfer(i2c2, 0x18 , 0 ,
 			I2C_SMBUS_READ, 0x0F ,
 			I2C_SMBUS_BYTE_DATA, &data);
@@ -291,7 +241,6 @@ int mop500_get_acc_id(void)
 				I2C_SMBUS_READ, 0x0F ,
 				I2C_SMBUS_BYTE_DATA, &data);
 	}
-#endif    
 	i2c_put_adapter(i2c2);
 	return (status < 0) ? status : data.byte;
 }
@@ -308,56 +257,87 @@ static struct platform_device *mop500_uib_platform_devs[] __initdata = {
  */
 static int __init u8500_uib_init(void)
 {
-	struct uib *uib = mop500_uibs;
 	struct i2c_adapter *i2c0;
 	struct i2c_adapter *i2c3;
-	int ret;
+	int ret = 0;
+	int reset_pin = -1;
 
-#if defined(CONFIG_MACH_BAMBOOK)
-    uib = &mop500_uibs[U8500UIB];
-#else
 	i2c0 = i2c_get_adapter(0);
-	if (!i2c0) {
-		__mop500_uib_init(&mop500_uibs[STUIB],
-				"fallback, could not get i2c0");
-		return -ENODEV;
+
+	i2c3 = i2c_get_adapter(3);
+
+	if (!i2c3 || !i2c0) {
+		type_of_uib = STUIB;
+		pr_err("fallback, could not get i2c0 and/or i2c3. %s selected.",
+			mop500_uibs[type_of_uib].name);
+		goto out;
 	}
+
+	/* The UIB is already powered on before the kernel is loaded */
 
 	/* U8500-UIB has the TC35893 at 0x44 on I2C0, the ST-UIB doesn't. */
 	ret = i2c_smbus_xfer(i2c0, 0x44, 0, I2C_SMBUS_WRITE, 0,
 			I2C_SMBUS_QUICK, NULL);
-	i2c_put_adapter(i2c0);
-	i2c3 = i2c_get_adapter(3);
-	if (!i2c3) {
-		__mop500_uib_init(&mop500_uibs[STUIB],
-				"fallback, could not get i2c3");
-		return -ENODEV;
-	}
+
 
 	if (ret == 0) {
 		ret = i2c_smbus_xfer(i2c3, 0x4B, 0, I2C_SMBUS_WRITE, 0,
 				I2C_SMBUS_QUICK, NULL);
-		i2c_put_adapter(i2c3);
 		if (ret == 0)
-			uib = &mop500_uibs[U8500UIB];
+			type_of_uib = U8500UIB;
 		else
-			uib = &mop500_uibs[U8500UIB_R3];
+			type_of_uib = U8500UIB_R3;
 	} else {
+		/* Make sure the bu21013 touch is powered - if present */
+		if (machine_is_hrefv60() ||
+		    machine_is_u8520() ||
+		    machine_is_a9500())
+			reset_pin = HREFV60_TOUCH_RST_GPIO;
+		else
+			reset_pin = GPIO_BU21013_CS;
+
+		ret = gpio_request(reset_pin, "touchp_reset");
+		if (ret) {
+			pr_err("Unable to request gpio %d as reset_pin for bu21013 detection",
+			       reset_pin);
+			reset_pin = -1;
+			goto out;
+		}
+		ret = gpio_direction_output(reset_pin, 1);
+		if (ret < 0) {
+			pr_err("gpio direction failed for pin %d for bu21013 detection\n",
+			       reset_pin);
+			goto out;
+		}
+		gpio_set_value_cansleep(reset_pin, 1);
+
 		ret = i2c_smbus_xfer(i2c3, 0x5C, 0, I2C_SMBUS_WRITE, 0,
 				I2C_SMBUS_QUICK, NULL);
-		i2c_put_adapter(i2c3);
 		if (ret == 0)
-			uib = &mop500_uibs[STUIB];
+			type_of_uib = STUIB;
+		else
+			type_of_uib = NO_UIB;
 	}
-#endif
-	__mop500_uib_init(uib, "detected");
-	mop500_gpio_keys_init();
-	platform_add_devices(mop500_uib_platform_devs,
-					ARRAY_SIZE(mop500_uib_platform_devs));
+
+	if (type_of_uib != NO_UIB) {
+		mop500_gpio_keys_init();
+		platform_add_devices(mop500_uib_platform_devs,
+				     ARRAY_SIZE(mop500_uib_platform_devs));
+	}
+
+out:
+	if (reset_pin != -1)
+		gpio_free(reset_pin);
+
+	if (i2c0)
+		i2c_put_adapter(i2c0);
+	if (i2c3)
+		i2c_put_adapter(i2c3);
+
 	return 0;
 }
 
-static bool __init u9540_uib_is_connected(void)
+static bool __init ux540_uib_is_connected(void)
 {
 	struct i2c_adapter *i2c2;
 	int ret;
@@ -373,114 +353,168 @@ static bool __init u9540_uib_is_connected(void)
 	return (ret == 0);
 }
 
-#define U9540_UIB_REV_PIN0 MOP500_EGPIO(8)
-#define U9540_UIB_REV_PIN1 MOP500_EGPIO(9)
-#define U9540_UIB_REV_PIN2 MOP500_EGPIO(10)
-#define U9540_UIB_REV_PIN3 MOP500_EGPIO(11)
+#define UX540_UIB_REV_PIN0 MOP500_EGPIO(8)
+#define UX540_UIB_REV_PIN1 MOP500_EGPIO(9)
+#define UX540_UIB_REV_PIN2 MOP500_EGPIO(10)
+#define UX540_UIB_REV_PIN3 MOP500_EGPIO(11)
 
-static u8 __init u9540_uib_revision(void)
+static u8 __init ux540_uib_revision(void)
 {
 	u8 revision = 0xFF;
 	int ret;
 
-	if (!u9540_uib_is_connected())
+	if (!ux540_uib_is_connected())
 		return 0xFE;
 
-	ret = gpio_request(U9540_UIB_REV_PIN0, __func__);
+	ret = gpio_request(UX540_UIB_REV_PIN0, __func__);
 	if (ret < 0) {
 		pr_err("%s: failed to request UIB ID GPIO\n", __func__);
 		goto out;
 	}
-	ret = gpio_request(U9540_UIB_REV_PIN1, __func__);
+	ret = gpio_request(UX540_UIB_REV_PIN1, __func__);
 	if (ret < 0) {
 		pr_err("%s: failed to request UIB ID GPIO\n", __func__);
 		goto out_free_pin0;
 	}
-	ret = gpio_request(U9540_UIB_REV_PIN2, __func__);
+	ret = gpio_request(UX540_UIB_REV_PIN2, __func__);
 	if (ret < 0) {
 		pr_err("%s: failed to request UIB ID GPIO\n", __func__);
 		goto out_free_pin1;
 	}
-	ret = gpio_request(U9540_UIB_REV_PIN3, __func__);
+	ret = gpio_request(UX540_UIB_REV_PIN3, __func__);
 	if (ret < 0) {
 		pr_err("%s: failed to request UIB ID GPIO\n", __func__);
 		goto out_free_pin2;
 	}
 
-	ret = gpio_direction_input(U9540_UIB_REV_PIN0);
+	ret = gpio_direction_input(UX540_UIB_REV_PIN0);
 	if (ret < 0) {
 		pr_err("%s: failed to configure UIB ID GPIO\n", __func__);
 		goto out_free_pin3;
 	}
-	ret = gpio_direction_input(U9540_UIB_REV_PIN1);
+	ret = gpio_direction_input(UX540_UIB_REV_PIN1);
 	if (ret < 0) {
 		pr_err("%s: failed to configure UIB ID GPIO\n", __func__);
 		goto out_free_pin3;
 	}
-	ret = gpio_direction_input(U9540_UIB_REV_PIN2);
+	ret = gpio_direction_input(UX540_UIB_REV_PIN2);
 	if (ret < 0) {
 		pr_err("%s: failed to configure UIB ID GPIO\n", __func__);
 		goto out_free_pin3;
 	}
-	ret = gpio_direction_input(U9540_UIB_REV_PIN3);
+	ret = gpio_direction_input(UX540_UIB_REV_PIN3);
 	if (ret < 0) {
 		pr_err("%s: failed to configure UIB ID GPIO\n", __func__);
 		goto out_free_pin3;
 	}
 
-	revision = (!!gpio_get_value_cansleep(U9540_UIB_REV_PIN0)) |
-			(!!gpio_get_value_cansleep(U9540_UIB_REV_PIN1) << 1) |
-			(!!gpio_get_value_cansleep(U9540_UIB_REV_PIN2) << 2) |
-			(!!gpio_get_value_cansleep(U9540_UIB_REV_PIN3) << 3);
+	revision = (!!gpio_get_value_cansleep(UX540_UIB_REV_PIN0)) |
+			(!!gpio_get_value_cansleep(UX540_UIB_REV_PIN1) << 1) |
+			(!!gpio_get_value_cansleep(UX540_UIB_REV_PIN2) << 2) |
+			(!!gpio_get_value_cansleep(UX540_UIB_REV_PIN3) << 3);
 
 out_free_pin3:
-	gpio_free(U9540_UIB_REV_PIN3);
+	gpio_free(UX540_UIB_REV_PIN3);
 out_free_pin2:
-	gpio_free(U9540_UIB_REV_PIN2);
+	gpio_free(UX540_UIB_REV_PIN2);
 out_free_pin1:
-	gpio_free(U9540_UIB_REV_PIN1);
+	gpio_free(UX540_UIB_REV_PIN1);
 out_free_pin0:
-	gpio_free(U9540_UIB_REV_PIN0);
+	gpio_free(UX540_UIB_REV_PIN0);
 out:
 	return revision;
 }
 
 static int __init u9540_uib_init(void)
 {
-	int result = 0;
+	int ret = 0;
 	u8 rev;
 
-	rev = u9540_uib_revision();
+	rev = ux540_uib_revision();
 	switch (rev) {
 	case 0x00:
-		__mop500_uib_init(&mop500_uibs[U9540UIBS_V1], "identified");
+		type_of_uib = U9540UIBS_V1;
 		break;
 	case 0x01:
-		__mop500_uib_init(&mop500_uibs[U9540UIBT_V1], "identified");
+		type_of_uib = U9540UIBT_V1;
 		break;
 	case 0x02:
-		__mop500_uib_init(&mop500_uibs[U9540UIBS_V2], "identified");
+		type_of_uib = U9540UIBS_V2;
+		break;
+	case 0x03:
+		type_of_uib = U9540UIBS_V3;
 		break;
 	case 0xFE:
+		type_of_uib = NO_UIB;
 		pr_err("u9540 UIB is not connected\n");
-		result = -ENODEV;
+		ret = -ENODEV;
 		break;
 	default:
+		type_of_uib = NO_UIB;
 		pr_err("u9540 UIB 0x%02x not supported!\n", rev);
-		result = -ENODEV;
+		ret = -ENODEV;
 		break;
 	}
-	return result;
+
+	return ret;
+}
+
+static int __init u8540_uib_init(void)
+{
+	int ret = 0;
+	u8 rev;
+
+	rev = ux540_uib_revision();
+	switch (rev) {
+	case 0x02:
+		type_of_uib = U8540UIBS_V2;
+		break;
+	case 0x03:
+		type_of_uib = U8540UIBS_V3;
+		break;
+	case 0xFE:
+		type_of_uib = NO_UIB;
+		pr_err("u8540 UIB is not connected\n");
+		ret = -ENODEV;
+		break;
+	default:
+		type_of_uib = NO_UIB;
+		pr_err("u8540 UIB 0x%02x not supported!\n", rev);
+		ret = -ENODEV;
+		break;
+	}
+
+	return ret;
 }
 
 static int __init mop500_uib_init(void)
 {
-	if (cpu_is_u8500())
-		return u8500_uib_init();
-	if (cpu_is_u9540())
-		return u9540_uib_init();
+	int ret = 0;
 
-	pr_err("unknown cpu!\n");
-	return -ENODEV;
+	if (type_of_uib != NO_UIB_SELECTED) {
+		pr_info("Using preselected uib: %s\n",
+			mop500_uibs[type_of_uib].name);
+		goto done;
+	}
+
+	pr_info("Autodetecting UIB\n");
+
+	if (cpu_is_u8500_family())
+		ret = u8500_uib_init();
+	else if (cpu_is_u9540())
+		ret = u9540_uib_init();
+	else if (machine_is_u8540())
+		ret = u8540_uib_init();
+	else
+		panic("unknown cpu!\n");
+
+	if (!ret)
+		pr_info("%s detected\n",
+			mop500_uibs[type_of_uib].name);
+done:
+	if (mop500_uibs[type_of_uib].init)
+		mop500_uibs[type_of_uib].init();
+
+	return ret;
 }
-module_init(mop500_uib_init);
+device_initcall(mop500_uib_init);

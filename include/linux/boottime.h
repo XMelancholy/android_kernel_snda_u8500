@@ -45,7 +45,7 @@ void __init boottime_mark_wtime(char *name, unsigned long time);
  * Add a sample point with the current time.
  * @name: The name of this sample point
  */
-void boottime_mark(char *name);
+void __init boottime_mark(char *name);
 
 /**
  * boottime_mark_symbolic()
@@ -67,7 +67,7 @@ void __ref boottime_activate(struct boottime_timer *bt);
  * This function is called when the kernel boot is done.
  * (before "free init memory" is called)
  */
-void boottime_deactivate(void);
+void __init boottime_deactivate(void);
 
 /**
  * boottime_system_up()

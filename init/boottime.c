@@ -64,13 +64,13 @@ enum boottime_cpu_load {
 };
 
 static LIST_HEAD(boottime_list);
-static DEFINE_SPINLOCK(boottime_list_lock);
-static struct boottime_timer boottime_timer;
-static int num_const_boottime_list;
+static __initdata DEFINE_SPINLOCK(boottime_list_lock);
+static __initdata struct boottime_timer boottime_timer;
+static __initdata int num_const_boottime_list;
 static struct boottime_list const_boottime_list[NUM_STATIC_BOOTTIME_ENTRIES];
 static unsigned long time_kernel_done;
 static unsigned long time_bootloader_done;
-static bool system_up;
+static __initdata bool system_up;
 static bool boottime_done;
 
 int __attribute__((weak)) boottime_arch_startup(void)
@@ -83,7 +83,7 @@ int __attribute__((weak)) boottime_bootloader_idle(void)
 	return 0;
 }
 
-static void boottime_mark_core(char *name,
+static void __init boottime_mark_core(char *name,
 				      unsigned long time,
 				      enum boottime_symbolic_print symbolic,
 				      enum boottime_cpu_load cpu_load)
@@ -169,7 +169,7 @@ void __ref boottime_mark_symbolic(void *name)
 				   BOOTTIME_CPU_LOAD);
 }
 
-void boottime_mark(char *name)
+void __init boottime_mark(char *name)
 {
 	if (boottime_timer.get_time)
 		boottime_mark_core(name,
@@ -227,7 +227,7 @@ void __init boottime_system_up(void)
 	system_up = true;
 }
 
-void boottime_deactivate(void)
+void __init boottime_deactivate(void)
 {
 	struct boottime_list *b;
 	unsigned long flags;

@@ -833,14 +833,18 @@ static struct cpufreq_frequency_table db8500_freq_table[] = {
 		.frequency = 800000,
 	},
 	[3] = {
-		/* Used for MAX_OPP, if available */
 		.index = 3,
-		.frequency = CPUFREQ_TABLE_END,
+		.frequency = 1000000,
 	},
 	[4] = {
+	/* Used for MAX_OPP, if available */
 		.index = 4,
 		.frequency = CPUFREQ_TABLE_END,
 	},
+	[5] = {
+		.index = 5,
+		.frequency = CPUFREQ_TABLE_END,
+	},	
 };
 
 static struct db8500_prcmu_pdata db8500_prcmu_pdata = {

@@ -675,6 +675,7 @@ static enum arm_opp db8500_idx2opp[] = {
 	ARM_EXTCLK,
 	ARM_50_OPP,
 	ARM_100_OPP,
+	ARM_MAX_OPP,
 	ARM_MAX_OPP
 };
 

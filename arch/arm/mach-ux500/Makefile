@@ -27,22 +27,11 @@ obj-$(CONFIG_MACH_HREFV60)	+= board-pins-sleep-force.o \
 				board-mop500-wlan.o \
 				board-mop500-rmi4.o
 
-obj-$(CONFIG_MACH_CCU9540)	+=  board-ccu9540.o \
-				board-ccux540-ver.o \
-				board-ccu9540-regulators.o \
-				board-ccu9540-pins.o \
-				board-ccu9540-sdi.o \
-				board-ccu9540-modem.o
 
 obj-$(CONFIG_MACH_PALLADIUM9540) 	+= board-palladium9540.o \
 					board-ccu9540-pins.o \
 					board-palladiumx540-sdi.o
 
-obj-$(CONFIG_MACH_CCU8540)	+= board-ccu8540.o \
-				board-ccux540-ver.o \
-				board-ccu8540-regulators.o \
-				board-ccu8540-pins.o \
-				board-ccu8540-sdi.o
 
 obj-$(CONFIG_MACH_PALLADIUM8540) 	+= board-palladium8540.o \
 					board-ccu8540-pins.o \

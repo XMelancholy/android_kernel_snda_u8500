@@ -81,11 +81,6 @@ choice
 	depends on MACH_U9540
 	default MACH_CCU9540
 
-config MACH_CCU9540
-	bool "CCU9540 Development platform"
-	select UIB
-	help
-	 Include support for the ccu9540 development platform.
 
 config MACH_PALLADIUM9540
 	bool "Palladium 9540 virtual platform"
@@ -94,13 +89,6 @@ config MACH_PALLADIUM9540
 
 endchoice
 
-config MACH_U8540
-	bool "U8540 Development platform"
-	depends on UX500_SOC_DB8500
-	select MACH_UX500
-	select PINCTRL_DB8540
-	help
-	  Include support for the U8540 development platform.
 
 choice
 	prompt "U8540 board type"

@@ -508,9 +508,27 @@ static int ske_kp_exit(void)
 }
 
 static const unsigned int mop500_ske_keymap[] = {
-#ifdef CONFIG_KEYLAYOUT_LAYOUT1
-	KEY(1, 3, KEY_VOLUMEUP),
-	KEY(2, 3, KEY_VOLUMEDOWN),
+#if defined(CONFIG_KEYLAYOUT_LAYOUT1)
+	KEY(2, 5, KEY_END),
+	KEY(4, 1, KEY_HOME),
+	KEY(3, 5, KEY_VOLUMEDOWN),
+	KEY(1, 3, KEY_EMAIL),
+	KEY(5, 2, KEY_RIGHT),
+	KEY(5, 0, KEY_BACKSPACE),
+
+	KEY(0, 5, KEY_MENU),
+	KEY(7, 6, KEY_ENTER),
+	KEY(4, 5, KEY_0),
+	KEY(6, 7, KEY_DOT),
+	KEY(3, 4, KEY_UP),
+	KEY(3, 3, KEY_DOWN),
+
+	KEY(6, 4, KEY_SEND),
+	KEY(6, 2, KEY_BACK),
+	KEY(4, 2, KEY_VOLUMEUP),
+	KEY(5, 5, KEY_SPACE),
+	KEY(4, 3, KEY_LEFT),
+	KEY(3, 2, KEY_SEARCH),
 #elif defined(CONFIG_KEYLAYOUT_LAYOUT2)
 	KEY(2, 5, KEY_RIGHT),
 	KEY(4, 1, KEY_ENTER),
@@ -559,20 +577,21 @@ static struct ske_keypad_platform_data mop500_ske_keypad_data = {
 
 #endif
 
+
 /*
  * TC35892
  */
-
+/*
 static void mop500_tc35892_init(struct tc3589x *tc3589x, unsigned int base)
 {
 	struct device *parent = NULL;
 #if 0
-	/* FIXME: Is the sdi actually part of tc3589x? */
+	// FIXME: Is the sdi actually part of tc3589x? 
 	parent = tc3589x->dev;
 #endif
 	mop500_sdi_tc35892_init(parent);
-}
-
+}*/
+/*
 static struct tc3589x_gpio_platform_data mop500_tc35892_gpio_data = {
 	.gpio_base	= MOP500_EGPIO(0),
 	.setup		= mop500_tc35892_init,
@@ -601,7 +620,7 @@ static struct lp5521_led_config lp5521_pri_led[] = {
 		.max_current = 0x5f,
 	},
 };
-
+*/
 #ifdef CONFIG_AV8100
 static struct av8100_platform_data av8100_plat_data = {
 	.irq			= NOMADIK_GPIO_TO_IRQ(192),
@@ -612,7 +631,7 @@ static struct av8100_platform_data av8100_plat_data = {
 	.mclk_freq		= 3, /* MCLK_RNG_31_38 */
 };
 #endif
-
+/*
 static struct lp5521_platform_data __initdata lp5521_pri_data = {
 	.label		= "lp5521_pri",
 	.led_config	= &lp5521_pri_led[0],
@@ -644,7 +663,7 @@ static struct lp5521_platform_data __initdata lp5521_sec_data = {
 	.num_channels	= 3,
 	.clock_mode	= LP5521_CLOCK_EXT,
 };
-
+*/
 #ifdef CONFIG_TSL27713_PLSENSOR
 static struct tsl27713_platform_data tsl27713_data = {
    .pdrive = 0x03,
@@ -655,19 +674,19 @@ static struct tsl27713_platform_data tsl27713_data = {
 #endif    
 
 static struct i2c_board_info __initdata mop500_i2c0_devices[] = {
-#if 0
+/*#if 0
 	{
 		I2C_BOARD_INFO("tc3589x", 0x42),
 		.irq		= NOMADIK_GPIO_TO_IRQ(217),
 		.platform_data  = &mop500_tc35892_data,
-	},
+	},*/
 #ifdef CONFIG_AV8100
 	{
 		I2C_BOARD_INFO("av8100", 0x70),
 		.platform_data = &av8100_plat_data,
 	},
 #endif
-#endif
+//#endif
 	/* I2C0 devices only available prior to HREFv60 */
 };
 

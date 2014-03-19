@@ -20,7 +20,6 @@ endif
 obj-$(CONFIG_MACH_HREFV60)	+= board-pins-sleep-force.o \
 				board-mop500.o \
 				board-mop500-sdi.o \
-				board-common-sdi.o \
 				board-mop500-regulators.o \
 				board-mop500-pins.o \
 				board-mop500-msp.o \

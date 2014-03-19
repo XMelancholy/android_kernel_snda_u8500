@@ -336,15 +336,6 @@ config CPU_FREQ_GOV_HOTPLUG
 
 	  If in doubt, say N.
 
-config CPU_FREQ_GOV_ONDEMANDAX
-	tristate "'ondemandAX' cpufreq governor"
-	depends on CPU_FREQ
-	help
-	  'ondemandAX' - more info https://raw.github.com/AnDyXX/Xperia-devices/
-	  blob/master/Xperia%20U%20Modules/OndemandAX%20governor/axperiau_ondemandax.c
-
-	  If in doubt, say N.
-
 config CPU_FREQ_GOV_PEGASUSQ
 	tristate "'pegasusq' cpufreq governor"
 	depends on CPU_FREQ

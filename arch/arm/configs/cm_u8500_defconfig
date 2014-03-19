@@ -316,8 +316,8 @@ CONFIG_UX500_SOC_DB8500=y
 #
 # Ux500 target platform (boards)
 #
-CONFIG_MACH_UX500=y
-CONFIG_MACH_U8500=y
+# CONFIG_MACH_UX500 is not set
+# CONFIG_MACH_U8500 is not set
 CONFIG_MACH_HREFV60=y
 # CONFIG_MACH_A9500 is not set
 # CONFIG_MACH_U8520 is not set

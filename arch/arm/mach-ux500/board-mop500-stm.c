@@ -122,7 +122,9 @@ static int stm_ste_disable_ape_on_mipi60(void)
 	if (retval)
 		STM_ERR("Failed to disable MIPI60\n");
 	else {
-		retval = nmk_config_pins(ARRAY_AND_SIZE(mop500_ske_pins));
+		if (!machine_is_snowball())
+			retval = nmk_config_pins(
+				ARRAY_AND_SIZE(mop500_ske_pins));
 		if (retval)
 			STM_ERR("Failed to enable SKE gpio\n");
 	}
@@ -207,32 +209,7 @@ static void control_level_shifter_for_microsd(int gpio_dir)
 {
 	int gpio[2];
 
-	if (machine_is_u8540()) {
-		static struct regulator *regu_sdio;
-
-		if (gpio_dir) {
-			regu_sdio = regulator_get(&ux500_stm_device.dev,
-					"vmmc_io");
-			if (IS_ERR(regu_sdio)) {
-				regu_sdio = NULL;
-				STM_ERR("Failed to get regulator vmmc_io\n");
-				return;
-			}
-
-			regulator_disable(regu_sdio);
-			prcmu_set_sdmmc_psw(gpio_dir);
-			regulator_set_voltage(regu_sdio, 2750000, 3000000);
-			regulator_enable(regu_sdio);
-			usleep_range(3000, 4000);
-		} else if (regu_sdio) {
-			regulator_disable(regu_sdio);
-			regulator_put(regu_sdio);
-			regu_sdio = NULL;
-		}
-		return;
-	}
-
-	if (machine_is_hrefv60() || machine_is_u9540() || machine_is_a9500()) {
+	if (machine_is_hrefv60() || machine_is_u9540()) {
 		gpio[0] = HREFV60_SDMMC_EN_GPIO;
 		gpio[1] = HREFV60_SDMMC_1V8_3V_GPIO;
 	} else if (machine_is_u8520()) {
@@ -340,7 +317,8 @@ static int stm_ste_connection(enum stm_connection_type con_type)
 		/* Enable altC3 on GPIO70-74 (STMMOD) and GPIO75-76 (UARTMOD) */
 		prcmu_enable_stm_mod_uart();
 		/* Enable APE on MIPI60 */
-		retval = nmk_config_pins_sleep(ARRAY_AND_SIZE(mop500_ske_pins));
+		if (!machine_is_snowball())
+			retval = nmk_config_pins_sleep(ARRAY_AND_SIZE(mop500_ske_pins));
 		if (retval)
 			STM_ERR("Failed to disable SKE GPIO\n");
 		else {

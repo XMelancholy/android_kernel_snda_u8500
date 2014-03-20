@@ -33,6 +33,9 @@
  *
  */
 
+#ifdef pr_fmt
+#undef pr_fmt
+#endif
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 /*Linux version 3.4.0 compilation*/
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))

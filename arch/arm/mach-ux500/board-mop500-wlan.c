@@ -10,6 +10,7 @@
 #include <linux/err.h>
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
+#include <linux/delay.h>
 #include <asm/mach-types.h>
 #include <mach/irqs.h>
 #include "pins.h"
@@ -19,7 +20,7 @@
 static void cw1200_release(struct device *dev);
 static int cw1200_clk_ctrl(const struct cw1200_platform_data *pdata,
 		bool enable);
-
+#if 0
 static struct resource cw1200_href_resources[] = {
 	{
 		.start = 215,
@@ -34,7 +35,7 @@ static struct resource cw1200_href_resources[] = {
 		.name = "cw1200_irq",
 	},
 };
-
+#endif
 static struct resource cw1200_href60_resources[] = {
 	{
 		.start = 170,
@@ -49,7 +50,7 @@ static struct resource cw1200_href60_resources[] = {
 		.name = "cw1200_irq",
 	},
 };
-
+#if 0
 static struct resource cw1200_a9500_resources[] = {
 	{
 		.start = 85,
@@ -79,7 +80,7 @@ static struct resource cw1200_u8540_resources[] = {
 		.name = "cw1200_irq",
 	},
 };
-
+#endif
 static struct cw1200_platform_data cw1200_platform_data = {
 	.clk_ctrl = cw1200_clk_ctrl,
 };
@@ -106,6 +107,7 @@ static int cw1200_clk_ctrl(const struct cw1200_platform_data *pdata,
 {
 	static const char *clock_name = "sys_clk_out";
 	int ret = 0;
+	int try = 5;
 
 	if (enable) {
 		clk_dev = clk_get(&cw1200_device.dev, clock_name);
@@ -115,15 +117,16 @@ static int cw1200_clk_ctrl(const struct cw1200_platform_data *pdata,
 				"%s: Failed to get clk '%s': %d\n",
 				__func__, clock_name, ret);
 		} else {
-			ret = clk_enable(clk_dev);
-			if(ret == -EACCES) {
-				ret = 0;
-				dev_warn(&cw1200_device.dev,"cw1200_clk_ctrl: change -EACCES to 0!!");
+			while (try--) {
+				ret = clk_enable(clk_dev);
+				if (ret == 0)
+					break;
+				msleep(50);
 			}
 			if (ret) {
 				clk_put(clk_dev);
 				dev_warn(&cw1200_device.dev,
-					"%s: workaround: Failed to enable clk '%s': %d\n",
+					"%s: Failed to enable clk '%s': %d\n",
 					__func__, clock_name, ret);
 			}
 		}
@@ -137,6 +140,7 @@ static int cw1200_clk_ctrl(const struct cw1200_platform_data *pdata,
 
 int __init mop500_wlan_init(void)
 {
+#if 0
 	if (machine_is_a9500()) {
 		cw1200_device.num_resources = ARRAY_SIZE(cw1200_a9500_resources);
 		cw1200_device.resource = cw1200_a9500_resources;
@@ -158,7 +162,10 @@ int __init mop500_wlan_init(void)
 				__machine_arch_type);
 		return -ENOTSUPP;
 	}
-
+#else
+		cw1200_device.num_resources = ARRAY_SIZE(cw1200_href60_resources);
+		cw1200_device.resource = cw1200_href60_resources;
+#endif
 	cw1200_platform_data.mmc_id = "mmc3";
 
 	cw1200_platform_data.reset = &cw1200_device.resource[0];

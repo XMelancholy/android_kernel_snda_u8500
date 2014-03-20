@@ -508,27 +508,9 @@ static int ske_kp_exit(void)
 }
 
 static const unsigned int mop500_ske_keymap[] = {
-#if defined(CONFIG_KEYLAYOUT_LAYOUT1)
-	KEY(2, 5, KEY_END),
-	KEY(4, 1, KEY_HOME),
-	KEY(2, 3, KEY_VOLUMEDOWN),
-	KEY(1, 3, KEY_EMAIL),
-	KEY(5, 2, KEY_RIGHT),
-	KEY(5, 0, KEY_BACKSPACE),
-
-	KEY(0, 5, KEY_MENU),
-	KEY(7, 6, KEY_ENTER),
-	KEY(4, 5, KEY_0),
-	KEY(6, 7, KEY_DOT),
-	KEY(3, 4, KEY_UP),
-	KEY(3, 3, KEY_DOWN),
-
-	KEY(6, 4, KEY_SEND),
-	KEY(6, 2, KEY_BACK),
+#ifdef CONFIG_KEYLAYOUT_LAYOUT1
 	KEY(1, 3, KEY_VOLUMEUP),
-	KEY(5, 5, KEY_SPACE),
-	KEY(4, 3, KEY_LEFT),
-	KEY(3, 2, KEY_SEARCH),
+	KEY(2, 3, KEY_VOLUMEDOWN),
 #elif defined(CONFIG_KEYLAYOUT_LAYOUT2)
 	KEY(2, 5, KEY_RIGHT),
 	KEY(4, 1, KEY_ENTER),
@@ -1336,7 +1318,7 @@ static void __init mop500_init_machine(void)
 	mop500_spi_init(parent);
 	mop500_uart_init(parent);
 #if defined(CONFIG_CW1200) || defined(CONFIG_CW1200_MODULE)
-	mop500_wlan_init();
+	mop500_wlan_init(parent);
 #endif
 
 #ifdef CONFIG_KEYBOARD_NOMADIK_SKE

@@ -126,9 +126,6 @@ config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
 	bool "pegasusq"
 	select CPU_FREQ_GOV_PEGASUSQ
 
-config CPU_FREQ_DEFAULT_GOV_LULZACTIVEQ
-	bool "lulzactiveq"
-	select CPU_FREQ_GOV_LULZACTIVEQ
 
 
 config CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND
@@ -160,10 +157,8 @@ config CPU_FREQ_DEFAULT_GOV_SAKURACTIVE
 	  support the hotplug governor. If unsure have a look at
 	  the help section of the driver. Fallback governor will be the
 	  performance governor.
-
+	  
 endchoice
-
-
 config CPU_FREQ_GOV_SAKURACTIVE
 	tristate "'sakuractive' cpufreq governor"
 	depends on CPU_FREQ && NO_HZ && HOTPLUG_CPU
@@ -197,6 +192,10 @@ config CPU_FREQ_GOV_INTELLIDEMAND
 	depends on CPU_FREQ
 	help
 	  'intellidemand' - an intelligent ondemand governor
+
+
+
+
 
 config CPU_FREQ_GOV_PERFORMANCE
 	tristate "'performance' governor"

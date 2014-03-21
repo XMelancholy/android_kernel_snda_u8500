@@ -508,6 +508,7 @@ static int ske_kp_exit(void)
 }
 
 static const unsigned int mop500_ske_keymap[] = {
+#if 0
 #ifdef CONFIG_KEYLAYOUT_LAYOUT1
 	KEY(1, 3, KEY_VOLUMEUP),
 	KEY(2, 3, KEY_VOLUMEDOWN),
@@ -534,6 +535,10 @@ static const unsigned int mop500_ske_keymap[] = {
 	KEY(3, 2, KEY_7),
 #else
 #warning "No keypad layout defined."
+#endif
+#else
+	KEY(1, 3, KEY_VOLUMEUP),
+	KEY(2, 3, KEY_VOLUMEDOWN),
 #endif
 };
 

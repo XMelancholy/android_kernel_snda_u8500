@@ -31,6 +31,7 @@ struct abx500_usbgpio_platform_data {
 	void (*enable)(void);
 	void (*disable)(void);
 	void (*put)(void);
+	int usb_cs;
 };
 void ux500_restore_context(struct musb *musb);
 #endif

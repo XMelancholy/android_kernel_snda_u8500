@@ -47,6 +47,11 @@ MODULE_DESCRIPTION("Softmac ST-Ericsson CW1200 common code");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("cw1200_core");
 
+/* Accept MAC address of the form macaddr=0x00,0x80,0xE1,0x30,0x40,0x50 */
+static u8 cw1200_mac_template[ETH_ALEN] = {0x00, 0x80, 0xe1, 0x00, 0x00, 0x00};
+module_param_array_named(macaddr, cw1200_mac_template, byte, NULL, S_IRUGO);
+MODULE_PARM_DESC(macaddr, "MAC address");
+
 /* TODO: use rates and channels from the device */
 #define RATETAB_ENT(_rate, _rateid, _flags)		\
 	{						\
@@ -226,7 +231,7 @@ static const struct ieee80211_ops cw1200_ops = {
 	/*.cancel_remain_on_channel = cw1200_cancel_remain_on_channel,	*/
 };
 
-struct ieee80211_hw *cw1200_init_common(size_t priv_data_len, u8 *mac_addr)
+struct ieee80211_hw *cw1200_init_common(size_t priv_data_len)
 {
 	int i;
 	struct ieee80211_hw *hw;
@@ -315,7 +320,7 @@ struct ieee80211_hw *cw1200_init_common(size_t priv_data_len, u8 *mac_addr)
 	hw->wiphy->max_scan_ssids = 2;
 	hw->wiphy->max_scan_ie_len = IEEE80211_MAX_DATA_LEN;
 
-	SET_IEEE80211_PERM_ADDR(hw, mac_addr);
+	SET_IEEE80211_PERM_ADDR(hw, cw1200_mac_template);
 
 	if (hw->wiphy->perm_addr[3] == 0 &&
 	    hw->wiphy->perm_addr[4] == 0 &&
@@ -493,8 +498,7 @@ EXPORT_SYMBOL_GPL(cw1200_unregister_common);
 int cw1200_core_probe(const struct sbus_ops *sbus_ops,
 		      struct sbus_priv *sbus,
 		      struct device *pdev,
-		      struct cw1200_common **pself,
-		      u8 *mac_addr)
+		      struct cw1200_common **pself)
 {
 	int err = -ENOMEM;
 	u16 ctrl_reg;
@@ -505,7 +509,7 @@ int cw1200_core_probe(const struct sbus_ops *sbus_ops,
 		.disableMoreFlagUsage = true,
 	};
 
-	dev = cw1200_init_common(sizeof(struct cw1200_common), mac_addr);
+	dev = cw1200_init_common(sizeof(struct cw1200_common));
 	if (!dev)
 		goto err;
 

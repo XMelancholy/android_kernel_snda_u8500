@@ -301,7 +301,8 @@ struct cw1200_sta_priv {
 int cw1200_core_probe(const struct sbus_ops *sbus_ops,
 		      struct sbus_priv *sbus,
 		      struct device *pdev,
-		      struct cw1200_common **pself);
+		      struct cw1200_common **pself,
+		      u8 *mac_addr);
 void cw1200_core_release(struct cw1200_common *self);
 
 #define CW1200_DBG_MSG		0x00000001

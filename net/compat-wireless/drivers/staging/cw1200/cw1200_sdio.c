@@ -30,6 +30,12 @@ MODULE_DESCRIPTION("mac80211 ST-Ericsson CW1200 SDIO driver");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("cw1200_wlan");
 
+/* Accept MAC address of the form macaddr=0x00,0x80,0xE1,0x30,0x40,0x50 */
+static u8 cw1200_mac_template[ETH_ALEN] = {0x00, 0x80, 0xe1, 0x00, 0x00, 0x00};
+module_param_array_named(macaddr, cw1200_mac_template, byte, NULL, S_IRUGO);
+MODULE_PARM_DESC(macaddr, "MAC address");
+
+
 struct sbus_priv {
 	struct sdio_func	*func;
 	struct cw1200_common	*core;
@@ -344,7 +350,7 @@ static int cw1200_sdio_probe(struct sdio_func *func,
 	sdio_release_host(func);
 
 	status = cw1200_core_probe(&cw1200_sdio_sbus_ops,
-			      self, &func->dev, &self->core);
+			      self, &func->dev, &self->core, cw1200_mac_template);
 	if (status) {
 		sdio_claim_host(func);
 		sdio_disable_func(func);

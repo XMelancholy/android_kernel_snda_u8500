@@ -1323,7 +1323,7 @@ static void __init mop500_init_machine(void)
 	mop500_spi_init(parent);
 	mop500_uart_init(parent);
 #if defined(CONFIG_CW1200) || defined(CONFIG_CW1200_MODULE)
-	mop500_wlan_init(parent);
+	mop500_wlan_init();
 #endif
 
 #ifdef CONFIG_KEYBOARD_NOMADIK_SKE

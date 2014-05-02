@@ -3192,12 +3192,12 @@ static void  db8500_prcmu_update_freq(struct cpufreq_frequency_table *ft)
 	case PRCMU_FW_PROJECT_U9500:
 	case PRCMU_FW_PROJECT_U8420:
 	case PRCMU_FW_PROJECT_A9420:
-		freq_table[3].frequency = 1000000;
+		freq_table[3].frequency = 1150000;
 		break;
 	case PRCMU_FW_PROJECT_U8500_C2:
 	case PRCMU_FW_PROJECT_U8500_MBL:
 	case PRCMU_FW_PROJECT_U8520:
-		freq_table[3].frequency = 1150000;
+		freq_table[3].frequency = 1200000;
 		break;
 	default:
 		break;

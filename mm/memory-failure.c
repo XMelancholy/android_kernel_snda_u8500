@@ -1447,18 +1447,10 @@ static int soft_offline_huge_page(struct page *page, int flags)
 		return ret;
 	}
 done:
-	/* overcommit hugetlb page will be freed to buddy */
-	if (PageHuge(hpage)) {
-		if (!PageHWPoison(hpage))
-			atomic_long_add(1 << compound_trans_order(hpage),
-					&mce_bad_pages);
-		set_page_hwpoison_huge_page(hpage);
-		dequeue_hwpoisoned_huge_page(hpage);
-	} else {
-		SetPageHWPoison(page);
-		atomic_long_inc(&mce_bad_pages);
-	}
-
+	if (!PageHWPoison(hpage))
+		atomic_long_add(1 << compound_trans_order(hpage), &mce_bad_pages);
+	set_page_hwpoison_huge_page(hpage);
+	dequeue_hwpoisoned_huge_page(hpage);
 	/* keep elevated page count for bad page */
 	return ret;
 }
@@ -1489,17 +1481,9 @@ int soft_offline_page(struct page *page, int flags)
 {
 	int ret;
 	unsigned long pfn = page_to_pfn(page);
-	struct page *hpage = compound_trans_head(page);
 
 	if (PageHuge(page))
 		return soft_offline_huge_page(page, flags);
-	if (PageTransHuge(hpage)) {
-		if (PageAnon(hpage) && unlikely(split_huge_page(hpage))) {
-			pr_info("soft offline: %#lx: failed to split THP\n",
-				pfn);
-			return -EBUSY;
-		}
-	}
 
 	ret = get_any_page(page, pfn, flags);
 	if (ret < 0)

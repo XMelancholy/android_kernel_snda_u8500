@@ -249,14 +249,9 @@ u32 intel_ring_get_active_head(struct intel_ring_buffer *ring)
 
 static int init_ring_common(struct intel_ring_buffer *ring)
 {
-	struct drm_device *dev = ring->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = ring->dev->dev_private;
 	struct drm_i915_gem_object *obj = ring->obj;
-	int ret = 0;
 	u32 head;
-
-	if (HAS_FORCE_WAKE(dev))
-		gen6_gt_force_wake_get(dev_priv);
 
 	/* Stop the ring if it's running. */
 	I915_WRITE_CTL(ring, 0);
@@ -295,9 +290,9 @@ static int init_ring_common(struct intel_ring_buffer *ring)
 			| RING_VALID);
 
 	/* If the head is still not zero, the ring is dead */
-	if (wait_for((I915_READ_CTL(ring) & RING_VALID) != 0 &&
-		     I915_READ_START(ring) == obj->gtt_offset &&
-		     (I915_READ_HEAD(ring) & HEAD_ADDR) == 0, 50)) {
+	if ((I915_READ_CTL(ring) & RING_VALID) == 0 ||
+	    I915_READ_START(ring) != obj->gtt_offset ||
+	    (I915_READ_HEAD(ring) & HEAD_ADDR) != 0) {
 		DRM_ERROR("%s initialization failed "
 				"ctl %08x head %08x tail %08x start %08x\n",
 				ring->name,
@@ -305,8 +300,7 @@ static int init_ring_common(struct intel_ring_buffer *ring)
 				I915_READ_HEAD(ring),
 				I915_READ_TAIL(ring),
 				I915_READ_START(ring));
-		ret = -EIO;
-		goto out;
+		return -EIO;
 	}
 
 	if (!drm_core_check_feature(ring->dev, DRIVER_MODESET))
@@ -318,11 +312,7 @@ static int init_ring_common(struct intel_ring_buffer *ring)
 		ring->last_retired_head = -1;
 	}
 
-out:
-	if (HAS_FORCE_WAKE(dev))
-		gen6_gt_force_wake_put(dev_priv);
-
-	return ret;
+	return 0;
 }
 
 static int
@@ -767,18 +757,6 @@ void intel_ring_setup_status_page(struct intel_ring_buffer *ring)
 
 	I915_WRITE(mmio, (u32)ring->status_page.gfx_addr);
 	POSTING_READ(mmio);
-
-	/* Flush the TLB for this page */
-	if (INTEL_INFO(dev)->gen >= 6) {
-		u32 reg = RING_INSTPM(ring->mmio_base);
-		I915_WRITE(reg,
-			   _MASKED_BIT_ENABLE(INSTPM_TLB_INVALIDATE |
-					      INSTPM_SYNC_FLUSH));
-		if (wait_for((I915_READ(reg) & INSTPM_SYNC_FLUSH) == 0,
-			     1000))
-			DRM_ERROR("%s: wait for SyncFlush to complete for TLB invalidation timed out\n",
-				  ring->name);
-	}
 }
 
 static int

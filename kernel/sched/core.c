@@ -692,6 +692,8 @@ int tg_nop(struct task_group *tg, void *data)
 }
 #endif
 
+void update_cpu_load(struct rq *this_rq);
+
 static void set_load_weight(struct task_struct *p)
 {
 	int prio = p->static_prio - MAX_RT_PRIO;
@@ -1096,7 +1098,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 	 * a task's CPU. ->pi_lock for waking tasks, rq->lock for runnable tasks.
 	 *
 	 * sched_move_task() holds both and thus holding either pins the cgroup,
-	 * see task_group().
+	 * see set_task_rq().
 	 *
 	 * Furthermore, all task_rq users should acquire both locks, see
 	 * task_rq_lock().
@@ -1651,10 +1653,8 @@ static void try_to_wake_up_local(struct task_struct *p)
 {
 	struct rq *rq = task_rq(p);
 
-	if (WARN_ON_ONCE(rq != this_rq()) ||
-	    WARN_ON_ONCE(p == current))
-		return;
-
+	BUG_ON(rq != this_rq());
+	BUG_ON(p == current);
 	lockdep_assert_held(&rq->lock);
 
 	if (!raw_spin_trylock(&p->pi_lock)) {
@@ -1688,8 +1688,7 @@ out:
  */
 int wake_up_process(struct task_struct *p)
 {
-	WARN_ON(task_is_stopped_or_traced(p));
-	return try_to_wake_up(p, TASK_NORMAL, 0);
+	return try_to_wake_up(p, TASK_ALL, 0);
 }
 EXPORT_SYMBOL(wake_up_process);
 
@@ -2618,12 +2617,21 @@ decay_load_missed(unsigned long load, unsigned long missed_updates, int idx)
  * scheduler tick (TICK_NSEC). With tickless idle this will not be called
  * every tick. We fix it up based on jiffies.
  */
-static void __update_cpu_load(struct rq *this_rq, unsigned long this_load,
-			      unsigned long pending_updates)
+void update_cpu_load(struct rq *this_rq)
 {
+	unsigned long this_load = this_rq->load.weight;
+	unsigned long curr_jiffies = jiffies;
+	unsigned long pending_updates;
 	int i, scale;
 
 	this_rq->nr_load_updates++;
+
+	/* Avoid repeated calls on same jiffy, when moving in and out of idle */
+	if (curr_jiffies == this_rq->last_load_update_tick)
+		return;
+
+	pending_updates = curr_jiffies - this_rq->last_load_update_tick;
+	this_rq->last_load_update_tick = curr_jiffies;
 
 	/* Update our load: */
 	this_rq->cpu_load[0] = this_load; /* Fasttrack for idx 0 */
@@ -2649,78 +2657,9 @@ static void __update_cpu_load(struct rq *this_rq, unsigned long this_load,
 	sched_avg_update(this_rq);
 }
 
-#ifdef CONFIG_NO_HZ
-/*
- * There is no sane way to deal with nohz on smp when using jiffies because the
- * cpu doing the jiffies update might drift wrt the cpu doing the jiffy reading
- * causing off-by-one errors in observed deltas; {0,2} instead of {1,1}.
- *
- * Therefore we cannot use the delta approach from the regular tick since that
- * would seriously skew the load calculation. However we'll make do for those
- * updates happening while idle (nohz_idle_balance) or coming out of idle
- * (tick_nohz_idle_exit).
- *
- * This means we might still be one tick off for nohz periods.
- */
-
-/*
- * Called from nohz_idle_balance() to update the load ratings before doing the
- * idle balance.
- */
-void update_idle_cpu_load(struct rq *this_rq)
-{
-	unsigned long curr_jiffies = ACCESS_ONCE(jiffies);
-	unsigned long load = this_rq->load.weight;
-	unsigned long pending_updates;
-
-	/*
-	 * bail if there's load or we're actually up-to-date.
-	 */
-	if (load || curr_jiffies == this_rq->last_load_update_tick)
-		return;
-
-	pending_updates = curr_jiffies - this_rq->last_load_update_tick;
-	this_rq->last_load_update_tick = curr_jiffies;
-
-	__update_cpu_load(this_rq, load, pending_updates);
-}
-
-/*
- * Called from tick_nohz_idle_exit() -- try and fix up the ticks we missed.
- */
-void update_cpu_load_nohz(void)
-{
-	struct rq *this_rq = this_rq();
-	unsigned long curr_jiffies = ACCESS_ONCE(jiffies);
-	unsigned long pending_updates;
-
-	if (curr_jiffies == this_rq->last_load_update_tick)
-		return;
-
-	raw_spin_lock(&this_rq->lock);
-	pending_updates = curr_jiffies - this_rq->last_load_update_tick;
-	if (pending_updates) {
-		this_rq->last_load_update_tick = curr_jiffies;
-		/*
-		 * We were idle, this means load 0, the current load might be
-		 * !0 due to remote wakeups and the sort.
-		 */
-		__update_cpu_load(this_rq, 0, pending_updates);
-	}
-	raw_spin_unlock(&this_rq->lock);
-}
-#endif /* CONFIG_NO_HZ */
-
-/*
- * Called from scheduler_tick()
- */
 static void update_cpu_load_active(struct rq *this_rq)
 {
-	/*
-	 * See the mess around update_idle_cpu_load() / update_cpu_load_nohz().
-	 */
-	this_rq->last_load_update_tick = jiffies;
-	__update_cpu_load(this_rq, this_rq->load.weight, 1);
+	update_cpu_load(this_rq);
 
 	calc_load_account_active(this_rq);
 }
@@ -3145,20 +3084,6 @@ void thread_group_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
 # define nsecs_to_cputime(__nsecs)	nsecs_to_jiffies(__nsecs)
 #endif
 
-static cputime_t scale_utime(cputime_t utime, cputime_t rtime, cputime_t total)
-{
-	u64 temp = (__force u64) rtime;
-
-	temp *= (__force u64) utime;
-
-	if (sizeof(cputime_t) == 4)
-		temp = div_u64(temp, (__force u32) total);
-	else
-		temp = div64_u64(temp, (__force u64) total);
-
-	return (__force cputime_t) temp;
-}
-
 void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
 {
 	cputime_t rtime, utime = p->utime, total = utime + p->stime;
@@ -3168,9 +3093,13 @@ void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
 	 */
 	rtime = nsecs_to_cputime(p->se.sum_exec_runtime);
 
-	if (total)
-		utime = scale_utime(utime, rtime, total);
-	else
+	if (total) {
+		u64 temp = (__force u64) rtime;
+
+		temp *= (__force u64) utime;
+		do_div(temp, (__force u32) total);
+		utime = (__force cputime_t) temp;
+	} else
 		utime = rtime;
 
 	/*
@@ -3197,9 +3126,13 @@ void thread_group_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
 	total = cputime.utime + cputime.stime;
 	rtime = nsecs_to_cputime(cputime.sum_exec_runtime);
 
-	if (total)
-		utime = scale_utime(cputime.utime, rtime, total);
-	else
+	if (total) {
+		u64 temp = (__force u64) rtime;
+
+		temp *= (__force u64) cputime.utime;
+		do_div(temp, (__force u32) total);
+		utime = (__force cputime_t) temp;
+	} else
 		utime = rtime;
 
 	sig->prev_utime = max(sig->prev_utime, utime);
@@ -5359,6 +5292,9 @@ static void migrate_tasks(unsigned int dead_cpu)
 	 */
 	rq->stop = NULL;
 
+	/* Ensure any throttled groups are reachable by pick_next_task */
+	unthrottle_offline_cfs_rqs(rq);
+
 	for ( ; ; ) {
 		/*
 		 * There's this thread running, bail when that's the only
@@ -6995,66 +6931,34 @@ int __init sched_create_sysfs_power_savings_entries(struct device *dev)
 }
 #endif /* CONFIG_SCHED_MC || CONFIG_SCHED_SMT */
 
-static int num_cpus_frozen;	/* used to mark begin/end of suspend/resume */
-
 /*
  * Update cpusets according to cpu_active mask.  If cpusets are
  * disabled, cpuset_update_active_cpus() becomes a simple wrapper
  * around partition_sched_domains().
- *
- * If we come here as part of a suspend/resume, don't touch cpusets because we
- * want to restore it back to its original state upon resume anyway.
  */
 static int cpuset_cpu_active(struct notifier_block *nfb, unsigned long action,
 			     void *hcpu)
 {
-	switch (action) {
-	case CPU_ONLINE_FROZEN:
-	case CPU_DOWN_FAILED_FROZEN:
-
-		/*
-		 * num_cpus_frozen tracks how many CPUs are involved in suspend
-		 * resume sequence. As long as this is not the last online
-		 * operation in the resume sequence, just build a single sched
-		 * domain, ignoring cpusets.
-		 */
-		num_cpus_frozen--;
-		if (likely(num_cpus_frozen)) {
-			partition_sched_domains(1, NULL, NULL);
-			break;
-		}
-
-		/*
-		 * This is the last CPU online operation. So fall through and
-		 * restore the original sched domains by considering the
-		 * cpuset configurations.
-		 */
-
+	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
 		cpuset_update_active_cpus();
-		break;
+		return NOTIFY_OK;
 	default:
 		return NOTIFY_DONE;
 	}
-	return NOTIFY_OK;
 }
 
 static int cpuset_cpu_inactive(struct notifier_block *nfb, unsigned long action,
 			       void *hcpu)
 {
-	switch (action) {
+	switch (action & ~CPU_TASKS_FROZEN) {
 	case CPU_DOWN_PREPARE:
 		cpuset_update_active_cpus();
-		break;
-	case CPU_DOWN_PREPARE_FROZEN:
-		num_cpus_frozen++;
-		partition_sched_domains(1, NULL, NULL);
-		break;
+		return NOTIFY_OK;
 	default:
 		return NOTIFY_DONE;
 	}
-	return NOTIFY_OK;
 }
 
 void __init sched_init_smp(void)
@@ -7107,7 +7011,6 @@ int in_sched_functions(unsigned long addr)
 
 #ifdef CONFIG_CGROUP_SCHED
 struct task_group root_task_group;
-LIST_HEAD(task_groups);
 #endif
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
@@ -7528,7 +7431,6 @@ void sched_destroy_group(struct task_group *tg)
  */
 void sched_move_task(struct task_struct *tsk)
 {
-	struct task_group *tg;
 	int on_rq, running;
 	unsigned long flags;
 	struct rq *rq;
@@ -7542,12 +7444,6 @@ void sched_move_task(struct task_struct *tsk)
 		dequeue_task(rq, tsk, 0);
 	if (unlikely(running))
 		tsk->sched_class->put_prev_task(rq, tsk);
-
-	tg = container_of(task_subsys_state_check(tsk, cpu_cgroup_subsys_id,
-				lockdep_is_held(&tsk->sighand->siglock)),
-			  struct task_group, css);
-	tg = autogroup_task_group(tsk, tg);
-	tsk->sched_task_group = tg;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	if (tsk->sched_class->task_move_group)
@@ -7989,12 +7885,7 @@ static int tg_set_cfs_bandwidth(struct task_group *tg, u64 period, u64 quota)
 
 	runtime_enabled = quota != RUNTIME_INF;
 	runtime_was_enabled = cfs_b->quota != RUNTIME_INF;
-	/*
-	 * If we need to toggle cfs_bandwidth_used, off->on must occur
-	 * before making related changes, and on->off must occur afterwards
-	 */
-	if (runtime_enabled && !runtime_was_enabled)
-		cfs_bandwidth_usage_inc();
+	account_cfs_bandwidth_used(runtime_enabled, runtime_was_enabled);
 	raw_spin_lock_irq(&cfs_b->lock);
 	cfs_b->period = ns_to_ktime(period);
 	cfs_b->quota = quota;
@@ -8020,8 +7911,6 @@ static int tg_set_cfs_bandwidth(struct task_group *tg, u64 period, u64 quota)
 			unthrottle_cfs_rq(cfs_rq);
 		raw_spin_unlock_irq(&rq->lock);
 	}
-	if (runtime_was_enabled && !runtime_enabled)
-		cfs_bandwidth_usage_dec();
 out_unlock:
 	mutex_unlock(&cfs_constraints_mutex);
 

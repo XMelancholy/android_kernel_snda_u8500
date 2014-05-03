@@ -61,7 +61,6 @@
 DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 {
 
-	.lock = __RAW_SPIN_LOCK_UNLOCKED(hrtimer_bases.lock),
 	.clock_base =
 	{
 		{
@@ -297,10 +296,6 @@ ktime_t ktime_sub_ns(const ktime_t kt, u64 nsec)
 		tmp.tv64 = nsec;
 	} else {
 		unsigned long rem = do_div(nsec, NSEC_PER_SEC);
-
-		/* Make sure nsec fits into long */
-		if (unlikely(nsec > KTIME_SEC_MAX))
-			return (ktime_t){ .tv64 = KTIME_MAX };
 
 		tmp = ktime_set((long)nsec, rem);
 	}
@@ -645,9 +640,21 @@ static inline void hrtimer_init_hres(struct hrtimer_cpu_base *base)
  * and expiry check is done in the hrtimer_interrupt or in the softirq.
  */
 static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
-					    struct hrtimer_clock_base *base)
+					    struct hrtimer_clock_base *base,
+					    int wakeup)
 {
-	return base->cpu_base->hres_active && hrtimer_reprogram(timer, base);
+	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
+		if (wakeup) {
+			raw_spin_unlock(&base->cpu_base->lock);
+			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
+			raw_spin_lock(&base->cpu_base->lock);
+		} else
+			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
+
+		return 1;
+	}
+
+	return 0;
 }
 
 static inline ktime_t hrtimer_update_base(struct hrtimer_cpu_base *base)
@@ -707,20 +714,17 @@ static int hrtimer_switch_to_hres(void)
 	return 1;
 }
 
-static void clock_was_set_work(struct work_struct *work)
-{
-	clock_was_set();
-}
-
-static DECLARE_WORK(hrtimer_work, clock_was_set_work);
-
 /*
- * Called from timekeeping and resume code to reprogramm the hrtimer
- * interrupt device on all cpus.
+ * Called from timekeeping code to reprogramm the hrtimer interrupt
+ * device. If called from the timer interrupt context we defer it to
+ * softirq context.
  */
 void clock_was_set_delayed(void)
 {
-	schedule_work(&hrtimer_work);
+	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+
+	cpu_base->clock_was_set = 1;
+	__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
 }
 
 #else
@@ -731,7 +735,8 @@ static inline int hrtimer_switch_to_hres(void) { return 0; }
 static inline void
 hrtimer_force_reprogram(struct hrtimer_cpu_base *base, int skip_equal) { }
 static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
-					    struct hrtimer_clock_base *base)
+					    struct hrtimer_clock_base *base,
+					    int wakeup)
 {
 	return 0;
 }
@@ -769,10 +774,8 @@ void hrtimers_resume(void)
 	WARN_ONCE(!irqs_disabled(),
 		  KERN_INFO "hrtimers_resume() called with IRQs enabled!");
 
-	/* Retrigger on the local CPU */
 	retrigger_next_event(NULL);
-	/* And schedule a retrigger for all others */
-	clock_was_set_delayed();
+	timerfd_clock_was_set();
 }
 
 static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
@@ -992,21 +995,8 @@ int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 	 *
 	 * XXX send_remote_softirq() ?
 	 */
-	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases)
-		&& hrtimer_enqueue_reprogram(timer, new_base)) {
-		if (wakeup) {
-			/*
-			 * We need to drop cpu_base->lock to avoid a
-			 * lock ordering issue vs. rq->lock.
-			 */
-			raw_spin_unlock(&new_base->cpu_base->lock);
-			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-			local_irq_restore(flags);
-			return ret;
-		} else {
-			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-		}
-	}
+	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
+		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
 
 	unlock_hrtimer_base(timer, &flags);
 
@@ -1317,8 +1307,6 @@ retry:
 
 				expires = ktime_sub(hrtimer_get_expires(timer),
 						    base->offset);
-				if (expires.tv64 < 0)
-					expires.tv64 = KTIME_MAX;
 				if (expires.tv64 < expires_next.tv64)
 					expires_next = expires;
 				break;
@@ -1421,6 +1409,13 @@ void hrtimer_peek_ahead_timers(void)
 
 static void run_hrtimer_softirq(struct softirq_action *h)
 {
+	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+
+	if (cpu_base->clock_was_set) {
+		cpu_base->clock_was_set = 0;
+		clock_was_set();
+	}
+
 	hrtimer_peek_ahead_timers();
 }
 
@@ -1644,6 +1639,8 @@ static void __cpuinit init_hrtimers_cpu(int cpu)
 {
 	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
 	int i;
+
+	raw_spin_lock_init(&cpu_base->lock);
 
 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
 		cpu_base->clock_base[i].cpu_base = cpu_base;

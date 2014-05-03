@@ -495,17 +495,12 @@ void tick_nohz_idle_enter(void)
  */
 void tick_nohz_irq_exit(void)
 {
-	unsigned long flags;
 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
 
 	if (!ts->inidle)
 		return;
 
-	local_irq_save(flags);
-
 	tick_nohz_stop_sched_tick(ts);
-
-	local_irq_restore(flags);
 }
 
 /**
@@ -582,7 +577,6 @@ void tick_nohz_idle_exit(void)
 	/* Update jiffies first */
 	select_nohz_load_balancer(0);
 	tick_do_update_jiffies64(now);
-	update_cpu_load_nohz();
 
 #ifndef CONFIG_VIRT_CPU_ACCOUNTING
 	/*
@@ -866,7 +860,7 @@ void tick_cancel_sched_timer(int cpu)
 		hrtimer_cancel(&ts->sched_timer);
 # endif
 
-	memset(ts, 0, sizeof(*ts));
+	ts->nohz_mode = NOHZ_MODE_INACTIVE;
 }
 #endif
 

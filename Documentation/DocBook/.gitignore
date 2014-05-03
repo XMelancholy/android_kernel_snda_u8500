@@ -1,6 +1,6 @@
 *.xml
 *.ps
-*.pdf
+#*.pdf
 *.html
 *.9.gz
 *.9

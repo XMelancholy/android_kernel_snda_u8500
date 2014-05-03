@@ -13,7 +13,7 @@
 
 #include <asm/mach-types.h>
 #include <plat/pincfg.h>
-#include <plat/gpio-nomadik.h>
+#include <linux/gpio/nomadik.h>
 #include <linux/mfd/abx500/ab8500-gpio.h>
 #include <linux/mfd/dbx500-prcmu.h>
 

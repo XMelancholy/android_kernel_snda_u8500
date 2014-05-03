@@ -19,6 +19,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/gpio.h>
+#include <linux/gpio/nomadik.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
@@ -35,7 +36,6 @@
 #include <asm/mach/irq.h>
 
 #include <plat/pincfg.h>
-#include <plat/gpio-nomadik.h>
 
 #include "pinctrl-nomadik.h"
 

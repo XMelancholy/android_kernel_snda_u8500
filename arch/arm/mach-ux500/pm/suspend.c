@@ -11,14 +11,13 @@
 
 #include <linux/suspend.h>
 #include <linux/mfd/dbx500-prcmu.h>
+#include <linux/gpio/nomadik.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/ab8500-debug.h>
 #include <linux/regulator/dbx500-prcmu.h>
 #include <linux/mfd/dbx500-prcmu.h>
 #include <linux/wakelock.h>
 #include <asm/mach-types.h>
-
-#include <plat/gpio-nomadik.h>
 
 #include <mach/context.h>
 #include <mach/pm.h>

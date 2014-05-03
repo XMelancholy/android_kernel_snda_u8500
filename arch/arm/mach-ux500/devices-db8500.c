@@ -11,12 +11,13 @@
 #include <linux/cpufreq.h>
 #include <linux/io.h>
 #include <linux/gpio.h>
+#include <linux/gpio/nomadik.h>
 #include <linux/amba/bus.h>
 #include <linux/amba/pl022.h>
 #include <linux/platform_data/ap9540_c2c_plat.h>
 
 #include <plat/pincfg.h>
-#include <plat/gpio-nomadik.h>
+
 #include <plat/ste_dma40.h>
 
 #include <mach/devices.h>

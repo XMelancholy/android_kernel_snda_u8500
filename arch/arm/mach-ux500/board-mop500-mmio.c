@@ -14,12 +14,12 @@
 #include <linux/init.h>
 #include <linux/err.h>
 #include <linux/gpio.h>
+#include <linux/gpio/nomadik.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/regulator/consumer.h>
 #include <linux/vmalloc.h>
 #include <asm/mach-types.h>
-#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 #include <mach/gpio.h>
 #include <mach/devices.h>

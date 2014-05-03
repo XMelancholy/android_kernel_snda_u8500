@@ -27,7 +27,6 @@
 
 #ifdef CONFIG_SND_SOC_UX500_AB850X
 #include <sound/ux500_ab8500.h>
-#include <plat/gpio-nomadik.h>
 #endif
 
 #ifdef CONFIG_SND_SOC_UX500_AB8540

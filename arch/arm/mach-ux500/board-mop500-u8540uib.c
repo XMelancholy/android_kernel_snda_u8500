@@ -19,8 +19,8 @@
 #include <linux/mfd/dbx500-prcmu.h>
 #include <linux/amba/pl022.h>
 #include <linux/platform_data/i2c-nomadik.h>
+#include <linux/gpio/nomadik.h>
 #include <asm/mach-types.h>
-#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 #include <mach/hardware.h>
 #include <mach/irqs.h>

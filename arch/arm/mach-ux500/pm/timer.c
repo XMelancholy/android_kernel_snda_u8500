@@ -30,7 +30,7 @@
 #include <mach/hardware.h>
 #include <mach/irqs-db8500.h>
 
-#include "../id.h"
+#include <mach/id.h>
 
 #define RTC_IMSC	0x10
 #define RTC_MIS		0x18

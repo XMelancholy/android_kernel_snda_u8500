@@ -18,7 +18,7 @@
 #include <mach/hardware.h>
 #include <mach/setup.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 struct dbx500_asic_id dbx500_id;
 EXPORT_SYMBOL(dbx500_id);

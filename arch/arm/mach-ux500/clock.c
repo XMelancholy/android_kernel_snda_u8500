@@ -13,7 +13,7 @@
 #include <linux/mfd/abx500/ux500_sysctrl.h>
 #include <linux/mfd/dbx500-prcmu.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "clock.h"
 #include "prcc.h"
 

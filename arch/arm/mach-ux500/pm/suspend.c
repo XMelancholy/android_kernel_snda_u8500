@@ -23,7 +23,7 @@
 #include <mach/context.h>
 #include <mach/pm.h>
 
-#include "../id.h"
+#include <mach/id.h>
 
 #include "suspend_dbg.h"
 

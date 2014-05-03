@@ -77,7 +77,7 @@
 #include <linux/tsl27713.h>
 #endif
 
-#include "id.h"
+#include <mach/id.h>
 #include "pins.h"
 #include "cpu-db8500.h"
 #include "pins-db8500.h"

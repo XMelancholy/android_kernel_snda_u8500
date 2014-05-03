@@ -31,9 +31,9 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/regulator/consumer.h>
+#include <mach/id.h>
 #include <plat/pincfg.h>
 #include "cg2900.h"
-#include "id.h"
 #include "devices-cg2900.h"
 
 #define BT_VS_POWER_SWITCH_OFF		0xFD40

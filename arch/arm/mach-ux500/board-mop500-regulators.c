@@ -17,7 +17,7 @@
 
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "board-mop500-regulators.h"
 
 /*

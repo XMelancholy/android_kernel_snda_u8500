@@ -25,7 +25,7 @@
 
 #include <mach/prcmu-debug.h>
 
-#include "../id.h"
+#include <mach/id.h>
 
 #define ARM_THRESHOLD_FREQ   400000
 #define DB9540_MIN_FREQ      266000

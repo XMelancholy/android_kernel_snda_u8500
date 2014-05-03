@@ -19,7 +19,7 @@
 
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #define HWOBS_NB 18	/* nb HWOBS pads */
 #define HWOBS_MASK_FOR_MODE_CFG 3

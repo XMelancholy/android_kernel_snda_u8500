@@ -18,7 +18,7 @@
 
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #define STATIC_TEE_TA_START_LOW	0xBC765EDE
 #define STATIC_TEE_TA_START_MID	0x6724

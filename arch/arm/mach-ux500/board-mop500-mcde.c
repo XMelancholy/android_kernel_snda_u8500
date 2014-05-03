@@ -28,7 +28,7 @@
 #include "pins-db8500.h"
 #include "pins.h"
 #include "board-mop500.h"
-#include "id.h"
+#include <mach/id.h>
 
 #define DSI_UNIT_INTERVAL_0	0x9
 #define DSI_UNIT_INTERVAL_1	0x9

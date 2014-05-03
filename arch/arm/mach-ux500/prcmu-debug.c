@@ -19,7 +19,7 @@
 #include <linux/cpufreq.h>
 #include <linux/mfd/dbx500-prcmu.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #define MAX_STATES 6
 #define MAX_NAMELEN 16

@@ -7,8 +7,7 @@
 #include <linux/mfd/abx500.h>
 #include <linux/input/ab8505_micro_usb_iddet.h>
 #include <plat/gpio-nomadik.h>
-
-#include "id.h"
+#include <mach/id.h>
 
 static int u9540_uart_cable(struct usb_accessory_state *accessory,
 		bool connected)

@@ -29,7 +29,7 @@
 
 #include <asm/hardware/gic.h>
 
-#include "../id.h"
+#include <mach/id.h>
 #include "scu.h"
 #include "../prcc.h"
 

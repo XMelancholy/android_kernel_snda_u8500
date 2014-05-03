@@ -14,7 +14,7 @@
 
 #include <asm/hardware/cache-l2x0.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 static struct tee_session session;
 static struct tee_context context;

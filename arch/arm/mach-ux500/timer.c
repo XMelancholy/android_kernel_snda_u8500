@@ -18,7 +18,7 @@
 #include <mach/irqs.h>
 #include <mach/context.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #ifdef CONFIG_DBX500_CONTEXT
 static int mtu_context_notifier_call(struct notifier_block *this,

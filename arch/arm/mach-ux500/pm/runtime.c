@@ -22,7 +22,7 @@
 #include <linux/gfp.h>
 #include <plat/pincfg.h>
 
-#include "../id.h"
+#include <mach/id.h>
 #include "../pins.h"
 
 #ifdef CONFIG_PM_RUNTIME

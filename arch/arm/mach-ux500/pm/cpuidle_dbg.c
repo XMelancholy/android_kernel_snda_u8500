@@ -30,7 +30,7 @@
 
 #include "cpuidle.h"
 #include "cpuidle_dbg.h"
-#include "../id.h"
+#include <mach/id.h>
 
 #define APE_ON_TIMER_INTERVAL 5 /* Seconds */
 

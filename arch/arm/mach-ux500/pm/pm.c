@@ -22,7 +22,7 @@
 #include <mach/pm.h>
 #include <mach/irqs.h>
 
-#include "../id.h"
+#include <mach/id.h>
 
 #define STABILIZATION_TIME 30 /* us */
 #define GIC_FREEZE_DELAY 1 /* us */

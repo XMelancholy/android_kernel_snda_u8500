@@ -20,7 +20,7 @@
 #include <mach/pm.h>
 #include <mach/context.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 static struct resource u8500_dma40_resources[] = {
 	[0] = {

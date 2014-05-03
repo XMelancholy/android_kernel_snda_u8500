@@ -23,7 +23,7 @@
 #include <mach/pm.h>
 #include <mach/pm-timer.h>
 
-#include "../id.h"
+#include <mach/id.h>
 /* To reach main_wake_lock */
 #include "../../../../kernel/power/power.h"
 

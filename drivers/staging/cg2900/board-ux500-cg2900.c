@@ -16,6 +16,7 @@
 #include <linux/mfd/abx500/ab8500-gpio.h>
 #include <linux/platform_device.h>
 #include <mach/gpio.h>
+#include <mach/id.h>
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci.h>
 #include <plat/gpio-nomadik.h>
@@ -26,7 +27,6 @@
 #include "devices-cg2900.h"
 #include "pins-db8500.h"
 #include "pins.h"
-#include "id.h"
 
 #define CG2900_BT_ENABLE_GPIO		170
 #define CG2900_GBF_ENA_RESET_GPIO	171

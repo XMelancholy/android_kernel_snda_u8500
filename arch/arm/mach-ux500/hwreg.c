@@ -103,7 +103,7 @@
 
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 /*
  * temporary definitions

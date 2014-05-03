@@ -22,7 +22,7 @@
 #include <mach/hardware.h>
 
 #include "pins.h"
-#include "id.h"
+#include <mach/id.h>
 #include "board-mop500-uib.h"
 #include "board-mop500.h"
 

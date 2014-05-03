@@ -15,7 +15,7 @@
 
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "clock.h"
 
 struct clk_debug_info {

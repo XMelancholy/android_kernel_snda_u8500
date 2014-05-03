@@ -37,7 +37,7 @@
 #include "pm/cpuidle.h"
 #include "devices-db8500.h"
 #include "prcc.h"
-#include "id.h"
+#include <mach/id.h>
 
 /* minimum static i/o mapping required to boot U8500 platforms */
 static struct map_desc u8500_uart_io_desc[] __initdata = {

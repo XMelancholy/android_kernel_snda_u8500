@@ -15,7 +15,7 @@
 #include <mach/hardware.h>
 #include <mach/pm.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "pins.h"
 #include "board-ux500-usb.h"
 

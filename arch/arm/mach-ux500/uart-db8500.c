@@ -16,7 +16,7 @@
 #include <mach/hardware.h>
 #include <mach/context.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #ifdef CONFIG_DBX500_CONTEXT
 

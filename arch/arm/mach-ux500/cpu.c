@@ -31,7 +31,7 @@
 #include <mach/reboot_reasons.h>
 #include <mach/pm.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "clock.h"
 
 void __iomem *_PRCMU_BASE;

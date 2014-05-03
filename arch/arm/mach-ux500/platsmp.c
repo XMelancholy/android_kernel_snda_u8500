@@ -26,7 +26,7 @@
 #include <mach/hardware.h>
 #include <mach/setup.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 /* This is called from headsmp.S to wakeup the secondary core */
 extern void u8500_secondary_startup(void);

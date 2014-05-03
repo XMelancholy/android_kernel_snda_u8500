@@ -30,7 +30,7 @@
 #include <mach/hardware.h>
 #include <mach/product.h>
 
-#include "id.h"
+#include <mach/id.h>
 #include "clock.h"
 #include "pins-db8500.h"
 #include "prcc.h"

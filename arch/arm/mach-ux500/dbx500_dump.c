@@ -19,7 +19,7 @@
 #include <mach/hardware.h>
 #include <mach/db8500-regs.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 #define AVS_SIZE	14
 #define PRCM_AVS_BASE  0x2FC

@@ -11,7 +11,7 @@
 #include <asm/hardware/cache-l2x0.h>
 #include <mach/hardware.h>
 
-#include "id.h"
+#include <mach/id.h>
 
 static void __iomem *l2x0_base;
 

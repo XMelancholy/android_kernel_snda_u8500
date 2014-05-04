@@ -131,7 +131,7 @@ void __init ux500_offchip_gpio_init(struct ux500_pins *pins)
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 #include <linux/slab.h>
-#include <linux/gpio/nomadik.h>
+#include <plat/gpio-nomadik.h>
 
 #include <mach/gpio.h>
 

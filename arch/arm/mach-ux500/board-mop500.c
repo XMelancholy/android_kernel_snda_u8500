@@ -40,7 +40,6 @@
 #include <linux/pwm_backlight.h>
 #include <linux/platform_data/crypto-ux500.h>
 #include <linux/platform_data/keypad-nomadik-ske.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/of.h>
 #include <linux/of_platform.h>
 #include <linux/ft5306.h>//new add
@@ -58,6 +57,7 @@
 
 #include <plat/ste_dma40.h>
 #include <plat/pincfg.h>
+#include <plat/gpio-nomadik.h>
 
 #include <mach/hardware.h>
 #include <mach/setup.h>

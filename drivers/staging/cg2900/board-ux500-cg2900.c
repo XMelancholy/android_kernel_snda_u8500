@@ -12,7 +12,6 @@
 
 #include <asm/mach-types.h>
 #include <linux/gpio.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/ioport.h>
 #include <linux/mfd/abx500/ab8500-gpio.h>
 #include <linux/platform_device.h>
@@ -20,6 +19,7 @@
 #include <mach/id.h>
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci.h>
+#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 
 #include "board-mop500.h"

@@ -9,7 +9,6 @@
 #include <linux/gpio.h>
 #include <linux/input/cyttsp.h>
 #include <linux/delay.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/i2c.h>
 #ifdef CONFIG_U8500_FLASH
 #include <linux/i2c/adp1653_plat.h>
@@ -21,6 +20,7 @@
 #include <linux/amba/pl022.h>
 #include <linux/lsm303dlh.h>
 #include <linux/l3g4200d.h>
+#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 #include <mach/hardware.h>
 #include <mach/irqs.h>

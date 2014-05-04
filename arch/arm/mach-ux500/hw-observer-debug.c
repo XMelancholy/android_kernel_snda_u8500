@@ -12,9 +12,9 @@
 #include <linux/uaccess.h>
 #include <linux/clk.h>
 #include <linux/gpio.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/io.h>
 
+#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 
 #include <mach/hardware.h>

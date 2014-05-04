@@ -23,7 +23,7 @@
 #include <linux/platform_data/keypad-nomadik-ske.h>
 #include <linux/regulator/consumer.h>
 
-#include <linux/gpio/nomadik.h>
+#include <plat/gpio-nomadik.h>
 
 /* SKE_CR bits */
 #define SKE_KPMLT	(0x1 << 6)

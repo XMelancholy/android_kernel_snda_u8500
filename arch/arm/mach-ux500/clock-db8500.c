@@ -19,12 +19,12 @@
 #include <linux/debugfs.h>
 #include <linux/module.h>
 #include <linux/gpio.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/mfd/abx500/ux500_sysctrl.h>
 #include <linux/workqueue.h>
 #include <linux/regulator/consumer.h>
 #include <linux/mfd/dbx500-prcmu.h>
 
+#include <plat/gpio-nomadik.h>
 #include <plat/pincfg.h>
 
 #include <mach/hardware.h>

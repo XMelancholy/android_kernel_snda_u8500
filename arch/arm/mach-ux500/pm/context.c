@@ -18,7 +18,8 @@
 #include <linux/notifier.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <linux/gpio/nomadik.h>
+
+#include <plat/gpio-nomadik.h>
 
 #include <mach/hardware.h>
 #include <mach/irqs.h>

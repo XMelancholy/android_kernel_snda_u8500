@@ -11,8 +11,9 @@
 #include <linux/init.h>
 #include <linux/delay.h>
 #include <linux/gpio.h>
-#include <linux/gpio/nomadik.h>
 #include <linux/mfd/dbx500-prcmu.h>
+
+#include <plat/gpio-nomadik.h>
 
 #include <asm/hardware/gic.h>
 #include <asm/processor.h>

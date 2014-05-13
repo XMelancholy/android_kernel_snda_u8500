@@ -12,7 +12,6 @@
 #include <mach/hardware.h>
 #include <asm/hardware/cache-l2x0.h>
 
-	.arch	armv7-a
 /*
  * Debugging stuff
  *

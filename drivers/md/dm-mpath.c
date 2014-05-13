@@ -1343,8 +1343,8 @@ static void multipath_resume(struct dm_target *ti)
  *     [priority selector-name num_ps_args [ps_args]*
  *      num_paths num_selector_args [path_dev [selector_args]* ]+ ]+
  */
-static void multipath_status(struct dm_target *ti, status_type_t type,
-			     char *result, unsigned int maxlen)
+static int multipath_status(struct dm_target *ti, status_type_t type,
+			    char *result, unsigned int maxlen)
 {
 	int sz = 0;
 	unsigned long flags;
@@ -1447,6 +1447,8 @@ static void multipath_status(struct dm_target *ti, status_type_t type,
 	}
 
 	spin_unlock_irqrestore(&m->lock, flags);
+
+	return 0;
 }
 
 static int multipath_message(struct dm_target *ti, unsigned argc, char **argv)
@@ -1541,11 +1543,8 @@ static int multipath_ioctl(struct dm_target *ti, unsigned int cmd,
 	/*
 	 * Only pass ioctls through if the device sizes match exactly.
 	 */
-	if (!bdev || ti->len != i_size_read(bdev->bd_inode) >> SECTOR_SHIFT) {
-		int err = scsi_verify_blk_ioctl(NULL, cmd);
-		if (err)
-			r = err;
-	}
+	if (!r && ti->len != i_size_read(bdev->bd_inode) >> SECTOR_SHIFT)
+		r = scsi_verify_blk_ioctl(NULL, cmd);
 
 	return r ? : __blkdev_driver_ioctl(bdev, mode, cmd, arg);
 }

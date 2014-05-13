@@ -304,6 +304,7 @@ ceph_parse_options(char *options, const char *dev_name,
 
 	/* start with defaults */
 	opt->flags = CEPH_OPT_DEFAULT;
+	opt->osd_timeout = CEPH_OSD_TIMEOUT_DEFAULT;
 	opt->osd_keepalive_timeout = CEPH_OSD_KEEPALIVE_DEFAULT;
 	opt->mount_timeout = CEPH_MOUNT_TIMEOUT_DEFAULT; /* seconds */
 	opt->osd_idle_ttl = CEPH_OSD_IDLE_TTL_DEFAULT;   /* seconds */
@@ -389,7 +390,7 @@ ceph_parse_options(char *options, const char *dev_name,
 
 			/* misc */
 		case Opt_osdtimeout:
-			pr_warning("ignoring deprecated osdtimeout option\n");
+			opt->osd_timeout = intval;
 			break;
 		case Opt_osdkeepalivetimeout:
 			opt->osd_keepalive_timeout = intval;

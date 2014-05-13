@@ -83,6 +83,7 @@ int ceph_check_fsid(struct ceph_client *client, struct ceph_fsid *fsid)
 			return -1;
 		}
 	} else {
+		pr_info("client%lld fsid %pU\n", ceph_client_id(client), fsid);
 		memcpy(&client->fsid, fsid, sizeof(*fsid));
 	}
 	return 0;
@@ -467,15 +468,19 @@ struct ceph_client *ceph_create_client(struct ceph_options *opt, void *private,
 	/* msgr */
 	if (ceph_test_opt(client, MYIP))
 		myaddr = &client->options->my_addr;
-	ceph_messenger_init(&client->msgr, myaddr,
-		client->supported_features,
-		client->required_features,
-		ceph_test_opt(client, NOCRC));
+	client->msgr = ceph_messenger_create(myaddr,
+					     client->supported_features,
+					     client->required_features);
+	if (IS_ERR(client->msgr)) {
+		err = PTR_ERR(client->msgr);
+		goto fail;
+	}
+	client->msgr->nocrc = ceph_test_opt(client, NOCRC);
 
 	/* subsystems */
 	err = ceph_monc_init(&client->monc, client);
 	if (err < 0)
-		goto fail;
+		goto fail_msgr;
 	err = ceph_osdc_init(&client->osdc, client);
 	if (err < 0)
 		goto fail_monc;
@@ -484,6 +489,8 @@ struct ceph_client *ceph_create_client(struct ceph_options *opt, void *private,
 
 fail_monc:
 	ceph_monc_stop(&client->monc);
+fail_msgr:
+	ceph_messenger_destroy(client->msgr);
 fail:
 	kfree(client);
 	return ERR_PTR(err);
@@ -494,14 +501,21 @@ void ceph_destroy_client(struct ceph_client *client)
 {
 	dout("destroy_client %p\n", client);
 
-	atomic_set(&client->msgr.stopping, 1);
-
 	/* unmount */
 	ceph_osdc_stop(&client->osdc);
+
+	/*
+	 * make sure osd connections close out before destroying the
+	 * auth module, which is needed to free those connections'
+	 * ceph_authorizers.
+	 */
+	ceph_msgr_flush();
 
 	ceph_monc_stop(&client->monc);
 
 	ceph_debugfs_client_cleanup(client);
+
+	ceph_messenger_destroy(client->msgr);
 
 	ceph_destroy_options(client->options);
 

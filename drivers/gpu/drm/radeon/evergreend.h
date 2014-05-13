@@ -77,10 +77,6 @@
 
 #define	CONFIG_MEMSIZE					0x5428
 
-#define	CP_STRMOUT_CNTL					0x84FC
-
-#define	CP_COHER_CNTL					0x85F0
-#define	CP_COHER_SIZE					0x85F4
 #define	CP_COHER_BASE					0x85F8
 #define CP_ME_CNTL					0x86D8
 #define		CP_ME_HALT					(1 << 28)
@@ -277,7 +273,6 @@
 #define	SCRATCH_UMSK					0x8540
 #define	SCRATCH_ADDR					0x8544
 
-#define	SMX_SAR_CTL0					0xA008
 #define	SMX_DC_CTL0					0xA020
 #define		USE_HASH_FUNCTION				(1 << 0)
 #define		NUMBER_OF_SETS(x)				((x) << 1)

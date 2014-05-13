@@ -107,6 +107,8 @@ void panic(const char *fmt, ...)
 		dump_stack();
 #endif
 
+	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+
 	/*
 	 * If we have crashed and we have a crash kernel loaded let it handle
 	 * everything else.
@@ -114,16 +116,14 @@ void panic(const char *fmt, ...)
 	 */
 	crash_kexec(NULL);
 
+	kmsg_dump(KMSG_DUMP_PANIC);
+
 	/*
 	 * Note smp_send_stop is the usual smp shutdown function, which
 	 * unfortunately means it may not be hardened to work in a panic
 	 * situation.
 	 */
 	smp_send_stop();
-
-	kmsg_dump(KMSG_DUMP_PANIC);
-
-	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
 	bust_spinlocks(0);
 

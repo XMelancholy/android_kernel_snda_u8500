@@ -23,6 +23,8 @@
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include <net/bluetooth/bluetooth.h>
+#include <linux/ctype.h>
+#include <linux/firmware.h>
 
 #define BTM_HEADER_LEN			4
 #define BTM_UPLD_SIZE			2312
@@ -41,6 +43,8 @@ struct btmrvl_thread {
 struct btmrvl_device {
 	void *card;
 	struct hci_dev *hcidev;
+	struct device *dev;
+	const char *cal_data;
 
 	u8 dev_type;
 
@@ -67,6 +71,7 @@ struct btmrvl_adapter {
 	u8 wakeup_tries;
 	wait_queue_head_t cmd_wait_q;
 	u8 cmd_complete;
+	bool is_suspended;
 };
 
 struct btmrvl_private {
@@ -90,6 +95,7 @@ struct btmrvl_private {
 #define BT_CMD_HOST_SLEEP_CONFIG	0x59
 #define BT_CMD_HOST_SLEEP_ENABLE	0x5A
 #define BT_CMD_MODULE_CFG_REQ		0x5B
+#define BT_CMD_LOAD_CONFIG_DATA		0x61
 
 /* Sub-commands: Module Bringup/Shutdown Request/Response */
 #define MODULE_BRINGUP_REQ		0xF1
@@ -115,11 +121,8 @@ struct btmrvl_private {
 #define PS_SLEEP			0x01
 #define PS_AWAKE			0x00
 
-struct btmrvl_cmd {
-	__le16 ocf_ogf;
-	u8 length;
-	u8 data[4];
-} __packed;
+#define BT_CMD_DATA_SIZE		32
+#define BT_CAL_DATA_SIZE		28
 
 struct btmrvl_event {
 	u8 ec;		/* event counter */
@@ -135,12 +138,14 @@ int btmrvl_remove_card(struct btmrvl_private *priv);
 
 void btmrvl_interrupt(struct btmrvl_private *priv);
 
-void btmrvl_check_evtpkt(struct btmrvl_private *priv, struct sk_buff *skb);
+bool btmrvl_check_evtpkt(struct btmrvl_private *priv, struct sk_buff *skb);
 int btmrvl_process_event(struct btmrvl_private *priv, struct sk_buff *skb);
 
 int btmrvl_send_module_cfg_cmd(struct btmrvl_private *priv, int subcmd);
+int btmrvl_send_hscfg_cmd(struct btmrvl_private *priv);
 int btmrvl_enable_ps(struct btmrvl_private *priv);
 int btmrvl_prepare_command(struct btmrvl_private *priv);
+int btmrvl_enable_hs(struct btmrvl_private *priv);
 
 #ifdef CONFIG_DEBUG_FS
 void btmrvl_debugfs_init(struct hci_dev *hdev);

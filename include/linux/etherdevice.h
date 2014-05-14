@@ -24,6 +24,7 @@
 #ifndef _LINUX_ETHERDEVICE_H
 #define _LINUX_ETHERDEVICE_H
 
+#include <linux/version.h>
 #include <linux/if_ether.h>
 #include <linux/netdevice.h>
 #include <linux/random.h>
@@ -170,7 +171,14 @@ static inline unsigned compare_ether_addr(const u8 *addr1, const u8 *addr2)
 	BUILD_BUG_ON(ETH_ALEN != 6);
 	return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) != 0;
 }
-
+// @daniel, from backport 3.13-1
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)
+static inline bool ether_addr_equal(const u8 *addr1, const u8 *addr2)
+{
+	return !compare_ether_addr(addr1, addr2);
+}
+#endif
+// @
 static inline unsigned long zap_last_2bytes(unsigned long value)
 {
 #ifdef __BIG_ENDIAN

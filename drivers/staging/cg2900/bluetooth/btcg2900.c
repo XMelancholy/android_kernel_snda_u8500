@@ -170,6 +170,7 @@ static bool handle_rx_evt(struct btcg2900_info *info, struct sk_buff *skb)
 static void hci_read_cb(struct cg2900_user_data *user, struct sk_buff *skb)
 {
 	int err = 0;
+	struct hci_dev *hdev;
 	struct dev_info *dev_info;
 	struct btcg2900_info *info;
 
@@ -179,6 +180,7 @@ static void hci_read_cb(struct cg2900_user_data *user, struct sk_buff *skb)
 	if (user->dev != info->evt || !handle_rx_evt(info, skb)) {
 		bt_cb(skb)->pkt_type = dev_info->hci_data_type;
 		skb->dev = (struct net_device *)info->hdev;
+		hdev = (struct hci_dev *)(skb->dev);
 		/* Update BlueZ stats */
 		info->hdev->stat.byte_rx += skb->len;
 		if (bt_cb(skb)->pkt_type == HCI_ACLDATA_PKT)
@@ -189,7 +191,7 @@ static void hci_read_cb(struct cg2900_user_data *user, struct sk_buff *skb)
 		BT_DBG("Data receive %d bytes", skb->len);
 
 		/* Provide BlueZ with received frame*/
-		err = hci_recv_frame(skb);
+		err = hci_recv_frame(hdev, skb);
 		/* If err, skb have been freed in hci_recv_frame() */
 		if (err)
 			BT_ERR(NAME "Failed in supplying packet to Bluetooth"
@@ -381,9 +383,8 @@ remove_users:
  *   -EOPNOTSUPP if supplied packet type is not supported.
  *   Error codes from cg2900_write.
  */
-static int btcg2900_send(struct sk_buff *skb)
+static int btcg2900_send(struct hci_dev *hdev, struct sk_buff *skb)
 {
-	struct hci_dev *hdev;
 	struct btcg2900_info *info;
 	struct cg2900_user_data *pf_data;
 	int err = 0;
@@ -393,7 +394,6 @@ static int btcg2900_send(struct sk_buff *skb)
 		return -EINVAL;
 	}
 
-	hdev = (struct hci_dev *)(skb->dev);
 	if (!hdev) {
 		BT_ERR(NAME "NULL supplied for hdev");
 		return -EINVAL;
@@ -431,41 +431,6 @@ static int btcg2900_send(struct sk_buff *skb)
 	};
 
 	return err;
-}
-
-/**
- * btcg2900_destruct() - Destruct HCI interface.
- * @hdev:	HCI device being destructed.
- */
-static void btcg2900_destruct(struct hci_dev *hdev)
-{
-	struct btcg2900_info *info;
-
-	BT_DBG("btcg2900_destruct");
-
-	info = hci_get_drvdata(hdev);
-	if (!info) {
-		BT_ERR(NAME "NULL supplied for info");
-		return;
-	}
-
-	/*
-	 * When destruct is called it means that the Bluetooth stack is done
-	 * with the HCI device and we can now free it.
-	 * Normally we do this only when removing the whole module through
-	 * btcg2900_remove(), but when being reset we free the device here and
-	 * we then set the reset state so that the reset handler can allocate a
-	 * new HCI device and then register it to the Bluetooth stack.
-	 */
-	if (info->reset_state == RESET_ACTIVATED) {
-		if (info->hdev) {
-			hci_free_dev(info->hdev);
-			info->hdev = NULL;
-		}
-		BT_DBG("New reset_state: RESET_UNREGISTERED");
-		info->reset_state = RESET_UNREGISTERED;
-		wake_up_all(&hci_wait_queue);
-	}
 }
 
 /**

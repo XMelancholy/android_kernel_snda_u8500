@@ -571,8 +571,8 @@ static __inline__ void sk_add_bind_node(struct sock *sk,
 	hlist_add_head(&sk->sk_bind_node, list);
 }
 
-#define sk_for_each(__sk, node, list) \
-	hlist_for_each_entry(__sk, node, list, sk_node)
+#define sk_for_each(...) \
+	macro_dispatcher(sk_for_each, __VA_ARGS__)(__VA_ARGS__)
 #define sk_for_each_rcu(__sk, node, list) \
 	hlist_for_each_entry_rcu(__sk, node, list, sk_node)
 #define sk_nulls_for_each(__sk, node, list) \
@@ -585,10 +585,24 @@ static __inline__ void sk_add_bind_node(struct sock *sk,
 #define sk_nulls_for_each_from(__sk, node) \
 	if (__sk && ({ node = &(__sk)->sk_nulls_node; 1; })) \
 		hlist_nulls_for_each_entry_from(__sk, node, sk_nulls_node)
-#define sk_for_each_safe(__sk, node, tmp, list) \
-	hlist_for_each_entry_safe(__sk, node, tmp, list, sk_node)
+#define sk_for_each_safe(...) \
+	macro_dispatcher(sk_for_each_safe, __VA_ARGS__)(__VA_ARGS__)
 #define sk_for_each_bound(__sk, node, list) \
 	hlist_for_each_entry(__sk, node, list, sk_bind_node)
+#define sk_for_each2(__sk, list) \
+	hlist_for_each_entry(__sk, list, sk_node)
+#define sk_for_each3(__sk, node, list) \
+	hlist_for_each_entry(__sk, node, list, sk_node)
+#define sk_for_each_safe4(__sk, node, tmp, list) \
+  	hlist_for_each_entry_safe(__sk, node, tmp, list, sk_node)	
+static inline struct user_namespace *sk_user_ns(struct sock *sk)
+{
+	/* Careful only use this in a context where these parameters
+	 * can not change and must all be valid, such as recvmsg from
+	 * userspace.
+	 */
+	return sk->sk_socket->file->f_cred->user_ns;
+}
 
 /* Sock flags */
 enum sock_flags {
@@ -622,6 +636,8 @@ enum sock_flags {
 		     * Will use last 4 bytes of packet sent from
 		     * user-space instead.
 		     */
+	SOCK_FILTER_LOCKED, /* Filter cannot be changed anymore */
+	SOCK_SELECT_ERR_QUEUE, /* Wake select on error queue */
 };
 
 static inline void sock_copy_flags(struct sock *nsk, struct sock *osk)

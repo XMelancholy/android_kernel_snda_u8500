@@ -1361,7 +1361,7 @@ static void __init mop500_init_machine(void)
 	regulator_has_full_constraints();
 }
 
-MACHINE_START(U8500, "ST-Ericsson MOP500 platform")
+MACHINE_START(U8500, "st-ericsson")
 	/* Maintainer: Srinidhi Kasagar <srinidhi.kasagar@stericsson.com> */
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
@@ -1377,7 +1377,7 @@ MACHINE_END
  * NOTE! 8520 machine reports as a HREFV60 until user space updates has been
  * done for 8520.
  */
-MACHINE_START(U8520, "ST-Ericsson U8500 Platform HREFv60+")
+MACHINE_START(U8520, "st-ericsson")
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
 	.init_irq	= mop500_init_irq,
@@ -1387,7 +1387,7 @@ MACHINE_START(U8520, "ST-Ericsson U8500 Platform HREFv60+")
 	.restart	= ux500_restart,
 MACHINE_END
 
-MACHINE_START(HREFV60, "ST-Ericsson U8500 Platform HREFv60+")
+MACHINE_START(HREFV60, "st-ericsson")
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
 	.init_irq	= mop500_init_irq,
@@ -1397,7 +1397,7 @@ MACHINE_START(HREFV60, "ST-Ericsson U8500 Platform HREFv60+")
 	.restart	= ux500_restart,
 MACHINE_END
 
-MACHINE_START(A9500, "ST-Ericsson A9500 Platform")
+MACHINE_START(A9500, "st-ericsson")
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
 	.init_irq	= mop500_init_irq,
@@ -1407,7 +1407,7 @@ MACHINE_START(A9500, "ST-Ericsson A9500 Platform")
 	.restart	= ux500_restart,
 MACHINE_END
 
-MACHINE_START(SNOWBALL, "ST-Ericsson Snowball platform")
+MACHINE_START(SNOWBALL, "st-ericsson")
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
 	.init_irq	= mop500_init_irq,

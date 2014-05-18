@@ -434,6 +434,41 @@ static int btcg2900_send(struct hci_dev *hdev, struct sk_buff *skb)
 }
 
 /**
+ * btcg2900_destruct() - Destruct HCI interface.
+ * @hdev:	HCI device being destructed.
+ */
+static void btcg2900_destruct(struct hci_dev *hdev)
+{
+	struct btcg2900_info *info;
+
+	BT_DBG("btcg2900_destruct");
+
+	info = hci_get_drvdata(hdev);
+	if (!info) {
+		BT_ERR(NAME "NULL supplied for info");
+		return;
+	}
+
+	/*
+	 * When destruct is called it means that the Bluetooth stack is done
+	 * with the HCI device and we can now free it.
+	 * Normally we do this only when removing the whole module through
+	 * btcg2900_remove(), but when being reset we free the device here and
+	 * we then set the reset state so that the reset handler can allocate a
+	 * new HCI device and then register it to the Bluetooth stack.
+	 */
+	if (info->reset_state == RESET_ACTIVATED) {
+		if (info->hdev) {
+			hci_free_dev(info->hdev);
+			info->hdev = NULL;
+		}
+		BT_DBG("New reset_state: RESET_UNREGISTERED");
+		info->reset_state = RESET_UNREGISTERED;
+		wake_up_all(&hci_wait_queue);
+	}
+}
+
+/**
  * get_info() - Return info structure for this device.
  * @dev:	Current device.
  *

@@ -13,7 +13,7 @@ ifeq ($(CONFIG_UX500_SOC_DB8500), y)
 
 obj-$(CONFIG_UX500_SOC_DBX500)	+= cpu-db8500.o devices-db8500.o \
 				   clock-db8500.o dma-db8500.o
-board-mcde-objs			+= board-mop500-mcde.o
+board-mcde-objs			+= board-mop500-mcde.o board-ccu9540-mcde.o
 endif
 
 
@@ -27,11 +27,22 @@ obj-$(CONFIG_MACH_HREFV60)	+= board-pins-sleep-force.o \
 				board-mop500-wlan.o \
 				board-mop500-rmi4.o
 
+obj-$(CONFIG_MACH_CCU9540)	+=  board-ccu9540.o \
+				board-ccux540-ver.o \
+				board-ccu9540-regulators.o \
+				board-ccu9540-pins.o \
+				board-ccu9540-sdi.o \
+				board-ccu9540-modem.o
 
 obj-$(CONFIG_MACH_PALLADIUM9540) 	+= board-palladium9540.o \
 					board-ccu9540-pins.o \
 					board-palladiumx540-sdi.o
 
+obj-$(CONFIG_MACH_CCU8540)	+= board-ccu8540.o \
+				board-ccux540-ver.o \
+				board-ccu8540-regulators.o \
+				board-ccu8540-pins.o \
+				board-ccu8540-sdi.o
 
 obj-$(CONFIG_MACH_PALLADIUM8540) 	+= board-palladium8540.o \
 					board-ccu8540-pins.o \
@@ -39,10 +50,10 @@ obj-$(CONFIG_MACH_PALLADIUM8540) 	+= board-palladium8540.o \
 
 obj-$(CONFIG_UIB) 		+= board-mop500-uib.o \
 				board-mop500-stuib.o \
-				board-mop500-u8500uib.o \
 				board-mop500-cyttsp.o \
 				board-mop500-u9540uib.o \
-				board-mop500-u8540uib.o
+				board-mop500-u8540uib.o \
+				board-mop500-u8500uib.o
 
 obj-$(CONFIG_ANDROID_STE_TIMED_VIBRA)	+= board-mop500-vibra.o
 obj-$(CONFIG_MCDE)		+= board-mcde.o

@@ -20,6 +20,7 @@
 #include <mach/hardware.h>
 #include <mach/ste-dma40-db8500.h>
 
+#include "board-mop500-sdi.h"
 #include "devices-db8500.h"
 #include "board-mop500.h"
 
@@ -31,13 +32,6 @@
 static int gpio_en = -1;
 static int gpio_vsel = -1;
 
-struct sdi_ios_pins {
-	int enable;
-	int vsel;
-};
-
-int ux500_common_sdi0_ios_handler_init(struct mmci_platform_data *sdi0,
-		struct sdi_ios_pins *pins);
 static int ux500_common_sdi0_ios_handler(struct device *dev,
 		struct mmc_ios *ios, enum rpm_status pm)
 {

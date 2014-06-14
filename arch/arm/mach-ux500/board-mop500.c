@@ -508,7 +508,6 @@ static int ske_kp_exit(void)
 }
 
 static const unsigned int mop500_ske_keymap[] = {
-#if 0
 #ifdef CONFIG_KEYLAYOUT_LAYOUT1
 	KEY(1, 3, KEY_VOLUMEUP),
 	KEY(2, 3, KEY_VOLUMEDOWN),
@@ -536,10 +535,6 @@ static const unsigned int mop500_ske_keymap[] = {
 #else
 #warning "No keypad layout defined."
 #endif
-#else
-	KEY(1, 3, KEY_VOLUMEUP),
-	KEY(2, 3, KEY_VOLUMEDOWN),
-#endif
 };
 
 static struct matrix_keymap_data mop500_ske_keymap_data = {
@@ -563,7 +558,6 @@ static struct ske_keypad_platform_data mop500_ske_keypad_data = {
 };
 
 #endif
-
 
 /*
  * TC35892
@@ -1361,7 +1355,7 @@ static void __init mop500_init_machine(void)
 	regulator_has_full_constraints();
 }
 
-MACHINE_START(U8500, "st-ericsson")
+MACHINE_START(U8500, "ST-Ericsson MOP500 platform")
 	/* Maintainer: Srinidhi Kasagar <srinidhi.kasagar@stericsson.com> */
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
@@ -1373,20 +1367,7 @@ MACHINE_START(U8500, "st-ericsson")
 	.restart	= ux500_restart,
 MACHINE_END
 
-/*
- * NOTE! 8520 machine reports as a HREFV60 until user space updates has been
- * done for 8520.
- */
-MACHINE_START(U8520, "st-ericsson")
-	.atag_offset	= 0x100,
-	.map_io		= u8500_map_io,
-	.init_irq	= mop500_init_irq,
-	.timer		= &ux500_timer,
-	.handle_irq	= gic_handle_irq,
-	.init_machine	= mop500_init_machine,
-	.restart	= ux500_restart,
-MACHINE_END
-
+//ST-Ericsson U8500 Platform HREFv60+
 MACHINE_START(HREFV60, "st-ericsson")
 	.atag_offset	= 0x100,
 	.map_io		= u8500_map_io,
@@ -1397,40 +1378,16 @@ MACHINE_START(HREFV60, "st-ericsson")
 	.restart	= ux500_restart,
 MACHINE_END
 
-MACHINE_START(A9500, "st-ericsson")
-	.atag_offset	= 0x100,
-	.map_io		= u8500_map_io,
-	.init_irq	= mop500_init_irq,
-	.timer		= &ux500_timer,
-	.handle_irq	= gic_handle_irq,
-	.init_machine	= mop500_init_machine,
-	.restart	= ux500_restart,
-MACHINE_END
-
-MACHINE_START(SNOWBALL, "st-ericsson")
-	.atag_offset	= 0x100,
-	.map_io		= u8500_map_io,
-	.init_irq	= mop500_init_irq,
-	/* we re-use nomadik timer here */
-	.timer		= &ux500_timer,
-	.handle_irq	= gic_handle_irq,
-	.init_machine	= mop500_init_machine,
-	.restart	= ux500_restart,
-MACHINE_END
-
 #ifdef CONFIG_MACH_UX500_DT
 static void __init u8500_init_machine(void)
 {
-	if (of_machine_is_compatible("calaosystems,snowball-a9500"))
-		return mop500_init_machine();
-	else if (of_machine_is_compatible("st-ericsson,hrefv60+"))
+	if (of_machine_is_compatible("st-ericsson,hrefv60+"))
 		return mop500_init_machine();
 	else if (of_machine_is_compatible("st-ericsson,mop500"))
 		return mop500_init_machine();
 }
 
 static const char * u8500_dt_board_compat[] = {
-	"calaosystems,snowball-a9500",
 	"st-ericsson,hrefv60+",
 	"st-ericsson,u8500",
 	"st-ericsson,mop500",

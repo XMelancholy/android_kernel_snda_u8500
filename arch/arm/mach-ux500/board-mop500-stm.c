@@ -122,9 +122,7 @@ static int stm_ste_disable_ape_on_mipi60(void)
 	if (retval)
 		STM_ERR("Failed to disable MIPI60\n");
 	else {
-		if (!machine_is_snowball())
-			retval = nmk_config_pins(
-				ARRAY_AND_SIZE(mop500_ske_pins));
+		retval = nmk_config_pins(ARRAY_AND_SIZE(mop500_ske_pins));
 		if (retval)
 			STM_ERR("Failed to enable SKE gpio\n");
 	}
@@ -209,12 +207,9 @@ static void control_level_shifter_for_microsd(int gpio_dir)
 {
 	int gpio[2];
 
-	if (machine_is_hrefv60() || machine_is_u9540()) {
+	if (machine_is_hrefv60()) {
 		gpio[0] = HREFV60_SDMMC_EN_GPIO;
 		gpio[1] = HREFV60_SDMMC_1V8_3V_GPIO;
-	} else if (machine_is_u8520()) {
-		gpio[0] = U8520_SDMMC_EN_GPIO;
-		gpio[1] = U8520_SDMMC_1V8_3V_GPIO;
 	} else {
 		gpio[0] = MOP500_EGPIO(17);
 		gpio[1] = MOP500_EGPIO(18);
@@ -317,8 +312,7 @@ static int stm_ste_connection(enum stm_connection_type con_type)
 		/* Enable altC3 on GPIO70-74 (STMMOD) and GPIO75-76 (UARTMOD) */
 		prcmu_enable_stm_mod_uart();
 		/* Enable APE on MIPI60 */
-		if (!machine_is_snowball())
-			retval = nmk_config_pins_sleep(ARRAY_AND_SIZE(mop500_ske_pins));
+		retval = nmk_config_pins_sleep(ARRAY_AND_SIZE(mop500_ske_pins));
 		if (retval)
 			STM_ERR("Failed to disable SKE GPIO\n");
 		else {

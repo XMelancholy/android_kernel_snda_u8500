@@ -17,6 +17,7 @@
 #include <linux/jiffies.h>
 #include <linux/miscdevice.h>
 #include "flash_common.h"
+#include "../../../arch/arm/mach-ux500/board-mop500-uib.h"
 
 #define DEBUG_LOG(...) printk(KERN_DEBUG "Camera Flash driver: " __VA_ARGS__)
 
@@ -62,8 +63,8 @@ static long flash_ioctl(struct file *file_p, unsigned int cmd, unsigned long arg
 	}
 
 	COPY_ARG_FROM_USER(&flash_arg,arg);
-
-		if (flash_arg.cam == SECONDARY_CAMERA || flash_arg.cam == PRIMARY_CAMERA)
+	if(!uib_is_u9540uibt_v1()){
+		if (flash_arg.cam == PRIMARY_CAMERA)
 			flash_p = flash_chips[flash_arg.cam];
 		else{
 			DEBUG_LOG("unsupported cam %lu\n",flash_arg.cam);
@@ -76,11 +77,11 @@ static long flash_ioctl(struct file *file_p, unsigned int cmd, unsigned long arg
 		{
 			ops = flash_p->ops;
 		}
-
+	}
 	switch(cmd){
 	case FLASH_GET_MODES:
 	{
-		if (flash_arg.cam == PRIMARY_CAMERA)
+		if ((flash_arg.cam == PRIMARY_CAMERA) && (!uib_is_u9540uibt_v1()))
 		{
 			err  = ops->get_modes(flash_p->priv_data,&flash_arg.flash_mode);
 			if(!err){

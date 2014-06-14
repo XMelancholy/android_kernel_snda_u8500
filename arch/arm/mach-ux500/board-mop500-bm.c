@@ -17,6 +17,7 @@
 #include <linux/mfd/abx500/ab8500-bm.h>
 #include <linux/mfd/abx500/ab8500-pwmleds.h>
 #include "board-mop500-bm.h"
+#include "board-ccu9540.h"
 
 /*
  * This array maps the raw hex value to charger output current used by the
@@ -26,6 +27,18 @@ static int ab8500_charge_output_curr_map[] = {
 	100,	200,	300,	400,	500,	600,	700,	800,
 	900,	1000,	1100,	1200,	1300,	1400,	1500,	1500,
 };
+
+static int ab8540_charge_output_curr_map[] = {
+	0,      0,      0,      75,     100,	125,	150,	175,
+	200,	225,	250,	275,	300,	325,	350,	375,
+	400,	425,	450,	475,	500,	525,	550,	575,
+	600,	625,	650,	675,	700,	725,	750,	775,
+	800,	825,	850,	875,	900,	925,	950,	975,
+	1000,	1025,	1050,	1075,	1100,	1125,	1150,	1175,
+	1200,	1225,	1250,	1275,	1300,	1325,	1350,	1375,
+	1400,	1425,	1450,	1500,	1600,	1700,	1900,	2000,
+};
+
 /*
  * This array maps the raw hex value to VBUS input current used by the AB8500
  * Values
@@ -34,6 +47,18 @@ static int ab8500_charge_input_curr_map[] = {
 	50,     98,     193,	290,	380,	450,	500,	600,
 	700,	800,	900,	1000,	1100,	1300,	1400,	1500,
 };
+
+static int ab8540_charge_input_curr_map[] = {
+	25,     50,     75,     100,	125,	150,	175,	200,
+	225,	250,	275,	300,	325,	350,	375,	400,
+	425,	450,	475,	500,	525,	550,	575,	600,
+	625,	650,	675,	700,	725,	750,	775,	800,
+	825,	850,	875,	900,	925,	950,	975,	1000,
+	1025,	1050,	1075,	1100,	1125,	1150,	1175,	1200,
+	1225,	1250,	1275,	1300,	1325,	1350,	1375,	1400,
+	1425,	1450,	1475,	1500,	1500,	1500,	1500,	1500,
+};
+
 /*
  * These are the defined batteries that uses a NTC and ID resistor placed
  * inside of the battery pack.
@@ -75,6 +100,28 @@ static struct abx500_res_to_temp temp_tbl_B[] = {
 	{65,  82869},
 };
 /* Discharge curve for 10mA load for Lowe batteries */
+static struct abx500_v_to_cap cap_tbl_type1[] = {
+	{4171,  100},
+	{4114,   95},
+	{4009,   83},
+	{3947,   74},
+	{3907,   67},
+	{3863,   59},
+	{3830,   56},
+	{3813,   53},
+	{3791,   46},
+	{3771,   33},
+	{3754,   25},
+	{3735,   20},
+	{3717,   17},
+	{3681,   13},
+	{3664,    8},
+	{3651,    6},
+	{3635,    5},
+	{3560,    3},
+	{3408,    1},
+	{3247,    0},
+};
 static struct abx500_v_to_cap cap_tbl_A[] = {
 	{4179,	100},
 	{4117,	 95},
@@ -387,11 +434,78 @@ static const struct abx500_battery_type bat_type[] = {
 		.batres_tbl = temp_to_batres_tbl,
 	},
 };
+
+static const struct abx500_battery_type ab9540_bat_type[] = {
+	[BATTERY_UNKNOWN] = {
+		/* First element always represent the UNKNOWN battery */
+		.name = POWER_SUPPLY_TECHNOLOGY_UNKNOWN,
+		.resis_high = 0,
+		.resis_low = 0,
+		.charge_full_design = 612,
+		.nominal_voltage = 3700,
+		.termination_vol = 4050,
+		.termination_curr = 200,
+		.recharge_cap = 95,
+		.normal_cur_lvl = 400,
+		.normal_vol_lvl = 4100,
+		.maint_a_cur_lvl = 400,
+		.maint_a_vol_lvl = 4050,
+		.maint_a_chg_timer_h = 60,
+		.maint_b_cur_lvl = 400,
+		.maint_b_vol_lvl = 4000,
+		.maint_b_chg_timer_h = 200,
+		.low_high_cur_lvl = 300,
+		.low_high_vol_lvl = 4000,
+		.adc_therm = ABx500_ADC_THERM_BATTEMP,
+		.n_temp_tbl_elements = ARRAY_SIZE(temp_tbl),
+		.r_to_t_tbl = temp_tbl,
+		.n_v_cap_tbl_elements = ARRAY_SIZE(cap_tbl),
+		.v_to_cap_tbl = cap_tbl,
+		.n_batres_tbl_elements = ARRAY_SIZE(temp_to_batres_tbl),
+		.batres_tbl = temp_to_batres_tbl,
+	},
+	{
+		.name = POWER_SUPPLY_TECHNOLOGY_LIPO,
+		.resis_high = 54500,
+		.resis_low = 12500,
+		.battery_resistance = 300,
+		.charge_full_design = 1500,
+		.nominal_voltage = 3600,
+		.termination_vol = 4150,
+		.termination_curr = 80,
+		.recharge_cap = 95,
+		.normal_cur_lvl = 700,
+		.normal_vol_lvl = 4200,
+		.maint_a_cur_lvl = 600,
+		.maint_a_vol_lvl = 4150,
+		.maint_a_chg_timer_h = 60,
+		.maint_b_cur_lvl = 600,
+		.maint_b_vol_lvl = 4025,
+		.maint_b_chg_timer_h = 200,
+		.low_high_cur_lvl = 300,
+		.low_high_vol_lvl = 4000,
+		.adc_therm = ABx500_ADC_THERM_BATTEMP,
+		.n_temp_tbl_elements = ARRAY_SIZE(temp_tbl),
+		.r_to_t_tbl = temp_tbl,
+		.n_v_cap_tbl_elements = ARRAY_SIZE(cap_tbl_type1),
+		.v_to_cap_tbl = cap_tbl_type1,
+		.n_batres_tbl_elements = ARRAY_SIZE(temp_to_batres_tbl),
+		.batres_tbl = temp_to_batres_tbl,
+	},
+};
+
 static char *ab8500_charger_supplied_to[] = {
 	"abx500_chargalg",
 	"ab8500_fg",
 	"ab8500_btemp",
 };
+
+static char *pm2xxx_charger_supplied_to[] = {
+	"abx500_chargalg",
+	"ab8500_fg",
+	"ab8500_btemp",
+};
+
 static char *ab8500_btemp_supplied_to[] = {
 	"abx500_chargalg",
 	"ab8500_fg",
@@ -413,6 +527,43 @@ struct abx500_charger_platform_data ab8500_charger_plat_data = {
 	.ac_enabled		= true,
 	.usb_enabled		= true,
 };
+
+struct abx500_charger_platform_data ab9540_charger_plat_data = {
+	.supplied_to = ab8500_charger_supplied_to,
+	.num_supplicants = ARRAY_SIZE(ab8500_charger_supplied_to),
+	.autopower_cfg		= false,
+	.ac_enabled		= false,
+	.usb_enabled		= true,
+};
+
+struct abx500_charger_platform_data ab8540_charger_plat_data = {
+	.supplied_to = ab8500_charger_supplied_to,
+	.num_supplicants = ARRAY_SIZE(ab8500_charger_supplied_to),
+	.autopower_cfg		= false,
+	.ac_enabled		= false,
+	.usb_enabled		= true,
+	.usb_power_path		= true,
+};
+
+struct pm2xxx_charger_platform_data ccu9540_pm2xxx_charger_plat_data = {
+	.supplied_to = pm2xxx_charger_supplied_to,
+	.num_supplicants = ARRAY_SIZE(pm2xxx_charger_supplied_to),
+	.label		= "pm2301",
+	.gpio_irq_number = GPIO_171,
+	.irq_type	= IRQF_SHARED | IRQF_NO_SUSPEND,
+	/* AB GPIO 60 located at offset 54 */
+	.lpn_gpio   = AB8500_PIN_GPIO(GPIO_60),
+};
+
+struct pm2xxx_charger_platform_data ccu8540_pm2xxx_charger_plat_data = {
+	.supplied_to = pm2xxx_charger_supplied_to,
+	.num_supplicants = ARRAY_SIZE(pm2xxx_charger_supplied_to),
+	.label		= "pm2301",
+	.gpio_irq_number = GPIO_38,
+	.irq_type	= IRQF_SHARED | IRQF_NO_SUSPEND,
+	.lpn_gpio   = AB8500_PIN_GPIO(52),
+};
+
 struct abx500_btemp_platform_data ab8500_btemp_plat_data = {
 	.supplied_to = ab8500_btemp_supplied_to,
 	.num_supplicants = ARRAY_SIZE(ab8500_btemp_supplied_to),
@@ -484,6 +635,14 @@ static const struct abx500_maxim_parameters ab8500_maxi_params = {
 	.wait_cycles = 10,
 	.charger_curr_step = 100,
 };
+
+static const struct abx500_maxim_parameters abx540_maxi_params = {
+	.ena_maxi = true,
+	.chg_curr = 3000,
+	.wait_cycles = 10,
+	.charger_curr_step = 200,
+};
+
 static const struct abx500_bm_charger_parameters chg = {
 	.usb_volt_max		= 5500,
 	.usb_curr_max		= 1500,
@@ -523,4 +682,82 @@ struct abx500_bm_data ab8500_bm_data = {
 	.n_chg_out_curr		= ARRAY_SIZE(ab8500_charge_output_curr_map),
 	.chg_input_curr		= ab8500_charge_input_curr_map,
 	.n_chg_in_curr		= ARRAY_SIZE(ab8500_charge_input_curr_map),
+};
+
+struct abx500_bm_data ab9540_bm_data = {
+	.temp_under		= 3,
+	.temp_low		= 8,
+	.temp_high		= 43,
+	.temp_over		= 48,
+	.main_safety_tmr_h	= 4,
+	.temp_interval_chg	= 20,
+	.temp_interval_nochg	= 120,
+	.usb_safety_tmr_h	= 4,
+	.bkup_bat_v		= BUP_VCH_SEL_2P6V,
+	.bkup_bat_i		= BUP_ICH_SEL_150UA,
+	.no_maintenance		= false,
+	.capacity_scaling	= false,
+	.adc_therm		= ABx500_ADC_THERM_BATTEMP,
+	.chg_unknown_bat	= false,
+	.enable_overshoot	= false,
+	.fg_res			= 100,
+	.cap_levels		= &cap_levels,
+	.bat_type		= ab9540_bat_type,
+	.n_btypes		= ARRAY_SIZE(ab9540_bat_type),
+	.batt_id		= 0,
+	.interval_charging	= 5,
+	.interval_not_charging	= 120,
+	.temp_hysteresis	= 3,
+	.gnd_lift_resistance	= 0,
+	.maxi			= &abx540_maxi_params,
+	.chg_params		= &chg,
+	.fg_params		= &fg,
+	.chg_output_curr	= ab8500_charge_output_curr_map,
+	.n_chg_out_curr		= ARRAY_SIZE(ab8500_charge_output_curr_map),
+	.chg_input_curr		= ab8500_charge_input_curr_map,
+	.n_chg_in_curr		= ARRAY_SIZE(ab8500_charge_input_curr_map),
+};
+
+struct abx500_bm_data ab8540_bm_data = {
+	.temp_under		= 3,
+	.temp_low		= 8,
+	.temp_high		= 43,
+	.temp_over		= 48,
+	.main_safety_tmr_h	= 4,
+	.temp_interval_chg	= 20,
+	.temp_interval_nochg	= 120,
+	.usb_safety_tmr_h	= 4,
+	.bkup_bat_v		= BUP_VCH_SEL_2P6V,
+	.bkup_bat_i		= BUP_ICH_SEL_150UA,
+	.no_maintenance		= false,
+	.capacity_scaling	= false,
+	.adc_therm		= ABx500_ADC_THERM_BATCTRL,
+	.chg_unknown_bat	= false,
+	.enable_overshoot	= false,
+	.fg_res			= 100,
+	.cap_levels		= &cap_levels,
+	.bat_type		= bat_type,
+	.n_btypes		= ARRAY_SIZE(bat_type),
+	.batt_id		= 0,
+	.interval_charging	= 5,
+	.interval_not_charging	= 120,
+	.temp_hysteresis	= 3,
+	.gnd_lift_resistance	= 0,
+	.maxi			= &abx540_maxi_params,
+	.chg_params		= &chg,
+	.fg_params		= &fg,
+	.chg_output_curr	= ab8540_charge_output_curr_map,
+	.n_chg_out_curr		= ARRAY_SIZE(ab8540_charge_output_curr_map),
+	.chg_input_curr		= ab8540_charge_input_curr_map,
+	.n_chg_in_curr		= ARRAY_SIZE(ab8540_charge_input_curr_map),
+};
+
+static const struct pm2xxx_bm_charger_parameters pm2xxx_chg = {
+	.ac_volt_max		= 7500,
+	.ac_curr_max		= 3000,
+};
+
+struct pm2xxx_bm_data pm2xxx_bm_data = {
+	.enable_overshoot	= false,
+	.chg_params		= &pm2xxx_chg,
 };
